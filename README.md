@@ -110,3 +110,7 @@ Flash
 ### RE
 
 - [Reverse binary Linux kernel](reverse/kernel.md)
+
+- [Reverse HiTool](reverse/hitool.md)
+
+- [Reverse Sofia](reverse/sofia.md)
