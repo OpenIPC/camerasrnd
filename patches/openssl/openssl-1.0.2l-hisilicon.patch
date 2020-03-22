@@ -1,0 +1,1855 @@
+diff --git a/apps/Makefile b/apps/Makefile
+index 8c3297e..47dbb75 100644
+--- a/apps/Makefile
++++ b/apps/Makefile
+@@ -2,6 +2,8 @@
+ #  apps/Makefile
+ #
+ 
++LIBSDK = -L$(SDK_OUT_DIR)/lib -lhi_cipher -lsecurec -lpthread -lrt -lm -ldl -lstdc++
++
+ DIR=		apps
+ TOP=		..
+ CC=		cc
+@@ -159,7 +161,7 @@ $(EXE): progs.h $(E_OBJ) $(PROGRAM).o $(DLIBCRYPTO) $(DLIBSSL)
+ 	elif [ -n "$(FIPSCANLIB)" ]; then \
+ 	  FIPSLD_CC="$(CC)"; CC=$(FIPSDIR)/bin/fipsld; export CC FIPSLD_CC; \
+ 	fi; \
+-	LIBRARIES="$(LIBSSL) $(LIBKRB5) $(LIBCRYPTO)" ; \
++	LIBRARIES="$(LIBSSL) $(LIBKRB5) $(LIBCRYPTO) $(LIBSDK)" ; \
+ 	$(MAKE) -f $(TOP)/Makefile.shared -e \
+ 		APPNAME=$(EXE) OBJECTS="$(PROGRAM).o $(E_OBJ)" \
+ 		LIBDEPS="$(PEX_LIBS) $$LIBRARIES $(EX_LIBS)" \
+diff --git a/crypto/evp/evp_test.c b/crypto/evp/evp_test.c
+index 9879642..de56623 100755
+--- a/crypto/evp/evp_test.c
++++ b/crypto/evp/evp_test.c
+@@ -60,6 +60,8 @@
+ #include <openssl/err.h>
+ #include <openssl/conf.h>
+ 
++#define ENGINE_DYNAMIC_SUPPORT
++
+ static void hexdump(FILE *f, const char *title, const unsigned char *s, int l)
+ {
+     int n = 0;
+@@ -131,6 +133,8 @@ static int test1_exit(int ec)
+     return (0);                 /* To keep some compilers quiet */
+ }
+ 
++void ENGINE_load_hisilicon(void);
++
+ static void test1(const EVP_CIPHER *c, const unsigned char *key, int kn,
+                   const unsigned char *iv, int in,
+                   const unsigned char *plaintext, int pn,
+@@ -496,6 +500,26 @@ int main(int argc, char **argv)
+     /* ENGINE_set_cipher_flags(ENGINE_CIPHER_FLAG_NOINIT); */
+ #endif
+ 
++#  ifdef ENGINE_DYNAMIC_SUPPORT
++    ENGINE *e = ENGINE_by_id("hisilicon");
++    if (NULL == e)
++    {
++        printf("engine is NULL\n");
++        EXIT(250);
++    }
++    printf("Hisilicon ENGINE %p\n", e);
++
++    ENGINE_init(e);
++    int rv = ENGINE_set_default(e, ENGINE_METHOD_ALL);
++    if (1 != rv)
++    {
++        printf("ENGINE_set_default failed, rv %d\n", rv);
++        EXIT(250);
++    }
++#   else
++    ENGINE_load_hisilicon();
++#   endif
++
+     for (;;) {
+         char line[4096];
+         char *p;
+diff --git a/crypto/rand/randtest.c b/crypto/rand/randtest.c
+index 91bcac9..81d9eca 100644
+--- a/crypto/rand/randtest.c
++++ b/crypto/rand/randtest.c
+@@ -59,6 +59,10 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <openssl/rand.h>
++#include <openssl/evp.h>
++#ifndef OPENSSL_NO_ENGINE
++# include <openssl/engine.h>
++#endif
+ 
+ #include "../e_os.h"
+ 
+@@ -77,6 +81,29 @@ int main(int argc, char **argv)
+      */
+     long d;
+ 
++ #ifndef OPENSSL_NO_ENGINE
++    /* Load all compiled-in ENGINEs */
++    ENGINE_load_builtin_engines();
++#endif
++
++  //   ENGINE_load_hisilicon();
++
++    ENGINE *e = ENGINE_by_id("hisilicon");
++    if (NULL == e)
++    {
++        printf("engine is NULL\n");
++        EXIT(250);
++    }
++    printf("Hisilicon ENGINE %p\n", e);
++
++    ENGINE_init(e);
++    int rv = ENGINE_set_default(e, ENGINE_METHOD_ALL);
++    if (1 != rv)
++    {
++        printf("ENGINE_set_default failed, rv %d\n", rv);
++        EXIT(250);
++    }
++
+     i = RAND_pseudo_bytes(buf, 2500);
+     if (i < 0) {
+         printf("init failed, the rand method is not properly installed\n");
+diff --git a/demos/engines/hisilicon/Makefile b/demos/engines/hisilicon/Makefile
+new file mode 100644
+index 0000000..d2b6b9b
+--- /dev/null
++++ b/demos/engines/hisilicon/Makefile
+@@ -0,0 +1,136 @@
++
++LIBNAME=	libhisilicon
++SRC=		hw_hisilicon.c
++OBJ=		hw_hisilicon.o
++HEADER=		hw_hisilicon.h
++
++CC  ?=		gcc
++PIC=		-fPIC
++CFLAGS=		-g -I../../../include $(PIC) -DENGINE_DYNAMIC_SUPPORT -DFLAT_INC
++AR  ?=		ar
++LD  ?=          ld
++RANLIB=		ranlib
++
++LIB=		$(LIBNAME).a
++SHLIB=		$(LIBNAME).so
++
++CFLAGS += -I$(SDK_OUT_DIR)/include -I$(SDK_OUT_DIR)/../../../../../osal/include
++
++all:
++		@echo 'Please choose a system to build on:'
++		@echo ''
++		@echo 'tru64:    Tru64 Unix, Digital Unix, Digital OSF/1'
++		@echo 'solaris:  Solaris'
++		@echo 'irix:     IRIX'
++		@echo 'hpux32:   32-bit HP/UX'
++		@echo 'hpux64:   64-bit HP/UX'
++		@echo 'aix:      AIX'
++		@echo 'gnu:      Generic GNU-based system (gcc and GNU ld)'
++		@echo ''
++
++clean:
++	rm -rf $(OBJ) $(LIB) $(SHLIB)
++
++FORCE.update:
++update:		FORCE.update
++		perl ../../../util/mkerr.pl -conf hw_zencod.ec \
++			-nostatic -staticloader -write hw_zencod.c
++
++gnu:		$(SHLIB).gnu
++tru64:		$(SHLIB).tru64
++solaris:	$(SHLIB).solaris
++irix:		$(SHLIB).irix
++hpux32:		$(SHLIB).hpux32
++hpux64:		$(SHLIB).hpux64
++aix:		$(SHLIB).aix
++
++$(LIB):		$(OBJ)
++		$(AR) r $(LIB) $(OBJ)
++
++LINK_SO=	\
++  $(LD) -r -o $(LIBNAME).o $$ALLSYMSFLAGS $(LIB) && \
++  (nm -Pg $(LIBNAME).o | grep ' [BDT] ' | cut -f1 -d' ' > $(LIBNAME).exp; \
++   $$SHAREDCMD $$SHAREDFLAGS -o $(SHLIB) $(LIBNAME).o -L ../../.. -lcrypto -lc)
++
++$(SHLIB).gnu:	$(LIB)
++		ALLSYMSFLAGS='--whole-archive' \
++		SHAREDFLAGS='-shared -Wl,-soname=$(SHLIB)' \
++		SHAREDCMD='$(CC)'; \
++		$(LINK_SO)
++		touch $(SHLIB).gnu
++$(SHLIB).tru64:	$(LIB)
++		ALLSYMSFLAGS='-all' \
++		SHAREDFLAGS='-shared' \
++		SHAREDCMD='$(CC)'; \
++		$(LINK_SO)
++		touch $(SHLIB).tru64
++$(SHLIB).solaris:	$(LIB)
++		ALLSYMSFLAGS='-z allextract' \
++		SHAREDFLAGS='-G -h $(SHLIB)' \
++		SHAREDCMD='$(CC)'; \
++		$(LINK_SO)
++		touch $(SHLIB).solaris
++$(SHLIB).irix:	$(LIB)
++		ALLSYMSFLAGS='-all' \
++		SHAREDFLAGS='-shared -Wl,-soname,$(SHLIB)' \
++		SHAREDCMD='$(CC)'; \
++		$(LINK_SO)
++		touch $(SHLIB).irix
++$(SHLIB).hpux32:	$(LIB)
++		ALLSYMSFLAGS='-Fl' \
++		SHAREDFLAGS='+vnocompatwarnings -b -z +s +h $(SHLIB)' \
++		SHAREDCMD='/usr/ccs/bin/ld'; \
++		$(LINK_SO)
++		touch $(SHLIB).hpux32
++$(SHLIB).hpux64:	$(LIB)
++		ALLSYMSFLAGS='+forceload' \
++		SHAREDFLAGS='-b -z +h $(SHLIB)' \
++		SHAREDCMD='/usr/ccs/bin/ld'; \
++		$(LINK_SO)
++		touch $(SHLIB).hpux64
++$(SHLIB).aix:	$(LIB)
++		ALLSYMSFLAGS='-bnogc' \
++		SHAREDFLAGS='-G -bE:$(LIBNAME).exp -bM:SRE' \
++		SHAREDCMD='$(CC)'; \
++		$(LINK_SO)
++		touch $(SHLIB).aix
++
++depend:
++		sed -e '/^# DO NOT DELETE.*/,$$d' < Makefile > Makefile.tmp
++		echo '# DO NOT DELETE THIS LINE -- make depend depends on it.' >> Makefile.tmp
++		gcc -M $(CFLAGS) $(SRC) >> Makefile.tmp
++		perl ../../../util/clean-depend.pl < Makefile.tmp > Makefile.new
++		rm -f Makefile.tmp Makefile
++		mv Makefile.new Makefile
++
++# DO NOT DELETE THIS LINE -- make depend depends on it.
++
++hw_hisilicon.o: ../../../include/openssl/aes.h ../../../include/openssl/asn1.h
++hw_hisilicon.o: ../../../include/openssl/bio.h ../../../include/openssl/bn.h
++hw_hisilicon.o: ../../../include/openssl/buffer.h
++hw_hisilicon.o: ../../../include/openssl/crypto.h
++hw_hisilicon.o: ../../../include/openssl/des.h
++hw_hisilicon.o: ../../../include/openssl/des_old.h
++hw_hisilicon.o: ../../../include/openssl/dh.h ../../../include/openssl/dsa.h
++hw_hisilicon.o: ../../../include/openssl/dso.h ../../../include/openssl/e_os2.h
++hw_hisilicon.o: ../../../include/openssl/ec.h ../../../include/openssl/ecdh.h
++hw_hisilicon.o: ../../../include/openssl/ecdsa.h
++hw_hisilicon.o: ../../../include/openssl/engine.h
++hw_hisilicon.o: ../../../include/openssl/err.h ../../../include/openssl/evp.h
++hw_hisilicon.o: ../../../include/openssl/lhash.h ../../../include/openssl/md5.h
++hw_hisilicon.o: ../../../include/openssl/obj_mac.h
++hw_hisilicon.o: ../../../include/openssl/objects.h
++hw_hisilicon.o: ../../../include/openssl/opensslconf.h
++hw_hisilicon.o: ../../../include/openssl/opensslv.h
++hw_hisilicon.o: ../../../include/openssl/ossl_typ.h
++hw_hisilicon.o: ../../../include/openssl/pkcs7.h
++hw_hisilicon.o: ../../../include/openssl/rand.h ../../../include/openssl/rc4.h
++hw_hisilicon.o: ../../../include/openssl/rsa.h
++hw_hisilicon.o: ../../../include/openssl/safestack.h
++hw_hisilicon.o: ../../../include/openssl/sha.h ../../../include/openssl/stack.h
++hw_hisilicon.o: ../../../include/openssl/symhacks.h
++hw_hisilicon.o: ../../../include/openssl/ui.h
++hw_hisilicon.o: ../../../include/openssl/ui_compat.h
++hw_hisilicon.o: ../../../include/openssl/x509.h
++hw_hisilicon.o: ../../../include/openssl/x509_vfy.h hw_hisilicon.c
++hw_hisilicon.o: hw_hisilicon.h hw_hisilicon_err.c hw_hisilicon_err.h
+diff --git a/demos/engines/hisilicon/hw_hisilicon.c b/demos/engines/hisilicon/hw_hisilicon.c
+new file mode 100644
+index 0000000..7440003
+--- /dev/null
++++ b/demos/engines/hisilicon/hw_hisilicon.c
+@@ -0,0 +1,1297 @@
++/* ====================================================================
++ * Copyright (c) 1999-2001 The OpenSSL Project.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ *
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in
++ *    the documentation and/or other materials provided with the
++ *    distribution.
++ *
++ * 3. All advertising materials mentioning features or use of this
++ *    software must display the following acknowledgment:
++ *    "This product includes software developed by the OpenSSL Project
++ *    for use in the OpenSSL Toolkit. (http://www.OpenSSL.org/)"
++ *
++ * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
++ *    endorse or promote products derived from this software without
++ *    prior written permission. For written permission, please contact
++ *    licensing@OpenSSL.org.
++ *
++ * 5. Products derived from this software may not be called "OpenSSL"
++ *    nor may "OpenSSL" appear in their names without prior written
++ *    permission of the OpenSSL Project.
++ *
++ * 6. Redistributions of any form whatsoever must retain the following
++ *    acknowledgment:
++ *    "This product includes software developed by the OpenSSL Project
++ *    for use in the OpenSSL Toolkit (http://www.OpenSSL.org/)"
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
++ * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
++ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
++ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
++ * OF THE POSSIBILITY OF SUCH DAMAGE.
++ * ====================================================================
++ *
++ * This product includes cryptographic software written by Eric Young
++ * (eay@cryptsoft.com).  This product includes software written by Tim
++ * Hudson (tjh@cryptsoft.com).
++ *
++ */
++
++/* ENGINE general include */
++#include <pthread.h>
++#include <stdio.h>
++#include <string.h>
++#include <openssl/engine.h>
++#include <openssl/crypto.h>
++#include <openssl/aes.h>
++#include <openssl/des.h>
++#include <openssl/evp.h>
++#include <openssl/sha.h>
++#include "hi_unf_cipher.h"
++
++#ifndef OPENSSL_NO_HW
++# ifndef OPENSSL_NO_HW_HISILICON
++
++#  ifdef FLAT_INC
++#   include "hw_hisilicon.h"
++#  else
++#   include "vendor_defns/hw_hisilicon.h"
++#  endif
++
++#  define HISILICON_LIB_NAME "hisilicon engine"
++#  include "hw_hisilicon_err.c"
++
++#  if 0
++#   define PERROR(fmt...)     printf(fmt)
++#   define CHEESE()           printf("## [HisiEngine] ## %s %d\n", __FUNCTION__, __LINE__)
++#   define HI_PRINT_HEX(name, str, len) \
++    {\
++        HI_U32 _i = 0;\
++        HI_U8 *_str; \
++        _str = (HI_U8*)str; \
++        printf("[%s]:\n", name);\
++        for ( _i = 0 ; _i < (len); _i++ )\
++        {\
++            if( (_i % 16 == 0) && (_i != 0)) printf("\n");\
++            printf("\\x%02x", *((_str)+_i));\
++        }\
++        printf("\n");\
++    }
++#  else
++#   define PERROR(fmt...)     printf(fmt)
++#   define CHEESE()
++#   define HI_PRINT_HEX(name, str, len)
++#  endif
++
++#define U32_TO_POINT(addr)  ((HI_VOID*)((size_t)(addr)))
++#define POINT_TO_U32(addr)  ((HI_U32)((size_t)(addr)))
++#define ALIGN16(x)          (((x) + 15) & (~0x0F))
++
++#define OPENSSL_SUCCESS     1
++#define OPENSSL_FAILURE     0
++#define OPENSSL_DMA_SIZE    0x1000
++
++/* Constants used when creating the ENGINE */
++static const char        *engine_hisilicon_id   = "hisilicon";
++static const char        *engine_hisilicon_name = "hisilicon hardware engine support";
++static pthread_spinlock_t engine_hisilicon_lock;
++static HI_HANDLE          engine_hisilicon_handle = 0;
++static HI_BOOL            engine_hisilicon_already_init  = HI_FALSE;
++
++/*
++ * static int engine_cipher_nids [ ] = { NID_rc4, NID_rc4_40, NID_des_cbc,
++ * NID_des_ede3_cbc } ;
++ */
++static int engine_cipher_nids[] =
++{
++    NID_aes_128_ecb,
++    NID_aes_192_ecb,
++    NID_aes_256_ecb,
++    NID_aes_128_cbc,
++    NID_aes_192_cbc,
++    NID_aes_256_cbc,
++    NID_aes_128_cfb128,
++    NID_aes_192_cfb128,
++    NID_aes_256_cfb128,
++    NID_aes_128_ofb128,
++    NID_aes_192_ofb128,
++    NID_aes_256_ofb128,
++    NID_aes_128_ctr,
++    NID_aes_192_ctr,
++    NID_aes_256_ctr,
++    NID_des_ede3_ecb,
++    NID_des_ede3_cbc,
++    NID_des_ede3_cfb64,
++    NID_des_ede3_ofb64,
++};
++static int engine_digest_nids [] = { NID_sha1, NID_sha256 } ;
++
++static int engine_cipher_nids_num = 9;
++static int engine_digest_nids_num = 2;
++
++typedef struct {
++    unsigned char aes_key[32];
++    unsigned char aes_iv[16];
++} HISI_AES_KEY;
++
++typedef struct {
++    unsigned char des3_key[24];
++    unsigned char des3_iv[8];
++} HISI_3DES_KEY;
++
++static int hisilicon_init(ENGINE *e)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_UNF_CIPHER_ATTS_S stCipherAttr;
++
++    CHEESE();
++
++    if (HI_TRUE == engine_hisilicon_already_init)
++    {
++        return OPENSSL_SUCCESS;
++    }
++
++    ret = HI_UNF_CIPHER_Init();
++    if (HI_SUCCESS != ret)
++    {
++        ENGINEerr(HISILICON_F_HISILICON_INIT, HISILICON_R_ALREADY_LOADED);
++        return OPENSSL_FAILURE;
++    }
++
++    stCipherAttr.enCipherType = HI_UNF_CIPHER_TYPE_NORMAL;
++    ret = HI_UNF_CIPHER_CreateHandle (&engine_hisilicon_handle, &stCipherAttr);
++    if( HI_SUCCESS != ret)
++    {
++        HI_UNF_CIPHER_DeInit();
++        return OPENSSL_FAILURE;
++    }
++
++    pthread_spin_init(&engine_hisilicon_lock, 0);
++
++    engine_hisilicon_already_init = HI_TRUE;
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int hisilicon_destroy(ENGINE *e)
++{
++    HI_S32 ret = HI_FAILURE;
++
++    CHEESE();
++
++    if (HI_TRUE != engine_hisilicon_already_init)
++    {
++        return OPENSSL_SUCCESS;
++    }
++
++    ret = HI_UNF_CIPHER_DestroyHandle(engine_hisilicon_handle);
++    if( HI_SUCCESS != ret)
++    {
++        return OPENSSL_FAILURE;
++    }
++
++    ret = HI_UNF_CIPHER_DeInit();
++    if (HI_SUCCESS != ret)
++    {
++        ENGINEerr(HISILICON_F_HISILICON_FINISH, HISILICON_R_UNIT_FAILURE);
++        return OPENSSL_FAILURE;
++    }
++
++    ERR_unload_HISILICON_strings();
++
++    pthread_spin_destroy(&engine_hisilicon_lock);
++
++    engine_hisilicon_already_init = HI_FALSE;
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int hisilicon_finish(ENGINE *e)
++{
++    HI_S32 ret = HI_FAILURE;
++
++    CHEESE();
++
++    if (HI_TRUE != engine_hisilicon_already_init)
++    {
++        return OPENSSL_SUCCESS;
++    }
++
++    ret = HI_UNF_CIPHER_DestroyHandle(engine_hisilicon_handle);
++    if( HI_SUCCESS != ret)
++    {
++        return OPENSSL_FAILURE;
++    }
++
++    ret = HI_UNF_CIPHER_DeInit();
++    if (HI_SUCCESS != ret)
++    {
++        ENGINEerr(HISILICON_F_HISILICON_FINISH, HISILICON_R_UNIT_FAILURE);
++        return OPENSSL_FAILURE;
++    }
++
++    ERR_unload_HISILICON_strings();
++
++    pthread_spin_destroy(&engine_hisilicon_lock);
++
++    engine_hisilicon_already_init = HI_FALSE;
++
++    return OPENSSL_SUCCESS;
++}
++
++/*
++ * SHA stuff Functions
++ */
++static int engine_hash_init(EVP_MD_CTX *ctx)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_HANDLE *handle = HI_NULL;
++    HI_UNF_CIPHER_HASH_ATTS_S stHashAttr;
++
++    CHEESE();
++
++    handle = (HI_HANDLE *)ctx->md_data;
++
++    switch(ctx->digest->type)
++    {
++    case NID_sha1:
++        stHashAttr.eShaType = HI_UNF_CIPHER_HASH_TYPE_SHA1;
++        break;
++    case NID_sha256:
++        stHashAttr.eShaType = HI_UNF_CIPHER_HASH_TYPE_SHA256;
++        break;
++    default:
++        PERROR("Invalid type %d\n", ctx->digest->type);
++        return OPENSSL_FAILURE;
++    }
++
++    ret = HI_UNF_CIPHER_HashInit (&stHashAttr, handle);
++    if( HI_SUCCESS != ret)
++    {
++        return OPENSSL_FAILURE;
++    }
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int engine_hash_update(EVP_MD_CTX *ctx, const void *data, size_t count)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_HANDLE handle = 0;
++
++    CHEESE();
++
++    memcpy(&handle, ctx->md_data, sizeof(HI_HANDLE));
++
++    ret = HI_UNF_CIPHER_HashUpdate(handle, (HI_U8*)data, count);
++    if( HI_SUCCESS != ret)
++    {
++        return OPENSSL_FAILURE;
++    }
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int engine_hash_final(EVP_MD_CTX *ctx, unsigned char *md)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_HANDLE handle = 0;
++
++    CHEESE();
++
++    memcpy(&handle, ctx->md_data, sizeof(HI_HANDLE));
++
++    ret = HI_UNF_CIPHER_HashFinal(handle, md);
++    if( HI_SUCCESS != ret)
++    {
++        return OPENSSL_FAILURE;
++    }
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int engine_aes_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,
++                               const unsigned char *iv, int enc)
++{
++    HISI_AES_KEY *tmp_aes_key = NULL;
++
++    CHEESE();
++
++    tmp_aes_key = (HISI_AES_KEY *) (ctx->cipher_data);
++    memcpy(tmp_aes_key->aes_key, key, ctx->cipher->key_len);
++    memcpy(tmp_aes_key->aes_iv, iv, ctx->cipher->iv_len);
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int engine_aes_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
++                                 const unsigned char *in, size_t in_len)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_HANDLE hCipher = engine_hisilicon_handle;
++    HI_UNF_CIPHER_CTRL_S stCtrl;
++    HISI_AES_KEY *tmp_aes_key = NULL;
++
++    CHEESE();
++
++    if (0 == in_len)
++    {
++        PERROR("Error: invalid data len %ld!\n", in_len);
++        return OPENSSL_FAILURE;
++    }
++
++    if (0 != (in_len % ctx->cipher->block_size))
++    {
++        PERROR("Error: invalid data len %ld!\n", in_len);
++        return OPENSSL_FAILURE;
++    }
++
++    pthread_spin_lock(&engine_hisilicon_lock);
++
++    tmp_aes_key = (HISI_AES_KEY *) (ctx->cipher_data);
++    stCtrl.bKeyByCA   = HI_FALSE;
++    stCtrl.enAlg      = HI_UNF_CIPHER_ALG_AES;
++    stCtrl.enBitWidth = HI_UNF_CIPHER_BIT_WIDTH_128BIT;
++    stCtrl.enKeyLen   = (ctx->cipher->key_len / 8) - 2; /* transform to HI_UNF_CIPHER_KEY_LENGTH_E */
++    stCtrl.stChangeFlags.bit1IV = 1;
++    memcpy(stCtrl.u32Key, tmp_aes_key->aes_key, ctx->cipher->key_len);
++    memcpy(stCtrl.u32IV, tmp_aes_key->aes_iv, ctx->cipher->iv_len);
++
++    //HI_PRINT_HEX ("key", (HI_U8*)stCtrl.u32Key, ctx->cipher->key_len);
++    //HI_PRINT_HEX ("iv", (HI_U8*)stCtrl.u32IV, ctx->cipher->iv_len);
++    //HI_PRINT_HEX ("in", in, in_len);
++
++    switch(ctx->cipher->nid)
++    {
++        case NID_aes_128_ecb:
++        case NID_aes_192_ecb:
++        case NID_aes_256_ecb:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_ECB;
++            break;
++        case NID_aes_128_cbc:
++        case NID_aes_192_cbc:
++        case NID_aes_256_cbc:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_CBC;
++            break;
++        case NID_aes_128_ofb128:
++        case NID_aes_192_ofb128:
++        case NID_aes_256_ofb128:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_OFB;
++            break;
++        case NID_aes_128_cfb128:
++        case NID_aes_192_cfb128:
++        case NID_aes_256_cfb128:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_CFB;
++            break;
++        case NID_aes_128_ctr:
++        case NID_aes_192_ctr:
++        case NID_aes_256_ctr:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_CTR;
++            break;
++        default:
++            PERROR("Error: invalid cipher nid %d!\n", ctx->cipher->nid);
++            goto error;
++    }
++    
++    ret = HI_UNF_CIPHER_ConfigHandle(hCipher, &stCtrl);
++    if( HI_SUCCESS != ret)
++    {
++        PERROR("Error:ConfigHandle failed!\n");
++        goto error;
++    }
++
++    if (AES_ENCRYPT == ctx->encrypt)
++    {
++        ret = HI_UNF_CIPHER_EncryptVir(hCipher, in, out, in_len);
++    }
++    else
++    {
++        ret = HI_UNF_CIPHER_DecryptVir(hCipher, in, out, in_len);
++    }
++    if( HI_SUCCESS != ret)
++    {
++        PERROR("Error:Encrypt/Decrypt failed!\n");
++        goto error;
++    }
++    //HI_PRINT_HEX ("out", out, in_len);
++
++    /*
++     * But we need to set up the rigth iv ... Test ENCRYPT or DECRYPT mode to
++     * set iv ...
++     */
++    if (ctx->encrypt == 1)
++    {
++        memcpy(ctx->iv, out + in_len - ctx->cipher->iv_len, ctx->cipher->iv_len);
++    }
++
++    pthread_spin_unlock(&engine_hisilicon_lock);
++
++    return OPENSSL_SUCCESS;;
++
++error:
++    pthread_spin_unlock(&engine_hisilicon_lock);
++
++    return OPENSSL_FAILURE;
++}
++
++static int engine_des_ede3_init_key(EVP_CIPHER_CTX *ctx,
++                                    const unsigned char *key,
++                                    const unsigned char *iv, int enc)
++{
++
++    HISI_3DES_KEY *tmp_3des_key = NULL;
++
++    CHEESE();
++
++    tmp_3des_key = (HISI_3DES_KEY *) (ctx->cipher_data);
++    memcpy(tmp_3des_key->des3_key, key, 24);
++    memcpy(tmp_3des_key->des3_iv,  iv,  8);
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int engine_des_ede3_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
++                                      const unsigned char *in,
++                                      size_t in_len)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_HANDLE hCipher = engine_hisilicon_handle;
++    HI_UNF_CIPHER_CTRL_S stCtrl;
++    HISI_3DES_KEY *tmp_3des_key = NULL;
++
++    CHEESE();
++
++    if (0 == in_len)
++    {
++        PERROR("Error: invalid data len %ld!\n", in_len);
++        return OPENSSL_FAILURE;
++    }
++
++    pthread_spin_lock(&engine_hisilicon_lock);
++
++    tmp_3des_key = (HISI_3DES_KEY *) (ctx->cipher_data);
++    stCtrl.bKeyByCA   = HI_FALSE;
++    stCtrl.enAlg      = HI_UNF_CIPHER_ALG_3DES;
++    stCtrl.enBitWidth = HI_UNF_CIPHER_BIT_WIDTH_64BIT;
++    stCtrl.enKeyLen   = HI_UNF_CIPHER_KEY_DES_3KEY;
++    stCtrl.stChangeFlags.bit1IV = 1;
++    memcpy(stCtrl.u32Key, tmp_3des_key->des3_key, ctx->cipher->key_len);
++    memcpy(stCtrl.u32IV,  tmp_3des_key->des3_iv,  ctx->cipher->iv_len);
++
++    //HI_PRINT_HEX ("key", (HI_U8*)stCtrl.u32Key, ctx->cipher->key_len);
++    //HI_PRINT_HEX ("iv", (HI_U8*)stCtrl.u32IV, ctx->cipher->iv_len);
++    //HI_PRINT_HEX ("in", in, in_len);
++
++    switch(ctx->cipher->nid)
++    {
++        case NID_des_ede3_ecb:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_ECB;
++            break;
++        case NID_des_ede3_cbc:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_CBC;
++            break;
++        case NID_des_ede3_ofb64:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_OFB;
++            break;
++        case NID_des_ede3_cfb64:
++            stCtrl.enWorkMode = HI_UNF_CIPHER_WORK_MODE_CFB;
++            break;
++        default:
++            PERROR("Error: invalid nid %d!\n", ctx->cipher->nid);
++            goto error;
++    }
++
++    ret = HI_UNF_CIPHER_ConfigHandle(hCipher, &stCtrl);
++    if( HI_SUCCESS != ret)
++    {
++        PERROR("Error:ConfigHandle failed!\n");
++        goto error;
++    }
++
++    if (AES_ENCRYPT == ctx->encrypt)
++    {
++        ret = HI_UNF_CIPHER_EncryptVir(hCipher, in, out, in_len);
++    }
++    else
++    {
++        ret = HI_UNF_CIPHER_DecryptVir(hCipher, in, out, in_len);
++    }
++    if( HI_SUCCESS != ret)
++    {
++        PERROR("Error:Encrypt/Decrypt failed!\n");
++        goto error;
++    }
++    //HI_PRINT_HEX ("out", out, in_len);
++
++    /*
++     * But we need to set up the rigth iv ... Test ENCRYPT or DECRYPT mode to
++     * set iv ...
++     */
++    if (ctx->encrypt == 1)
++    {
++        memcpy(ctx->iv, out + in_len - ctx->cipher->iv_len, ctx->cipher->iv_len);
++    }
++
++    pthread_spin_unlock(&engine_hisilicon_lock);
++
++    return OPENSSL_SUCCESS;;
++
++error:
++    pthread_spin_unlock(&engine_hisilicon_lock);
++
++    return OPENSSL_FAILURE;
++}
++
++static int engine_cipher_cleanup(EVP_CIPHER_CTX *ctx)
++{
++    CHEESE();
++
++    return OPENSSL_SUCCESS;;
++}
++
++/*
++ * RSA stuff Functions
++ */
++#  ifndef OPENSSL_NO_RSA
++/*
++ * This function is aliased to RSA_mod_exp (with the mont stuff dropped).
++ */
++static int RSA_hisilicon_bn_mod_exp(BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
++                                 const BIGNUM *m, BN_CTX *ctx,
++                                 BN_MONT_CTX *m_ctx)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_UNF_CIPHER_RSA_PRI_ENC_S stRsaEnc;
++    HI_U8 *pu8N = HI_NULL;
++    HI_U8 *pu8K = HI_NULL;
++    HI_U8 *pu8M = HI_NULL;
++    HI_U8 *pu8R = HI_NULL;
++    HI_U32 u32KLen = 0;
++
++    CHEESE();
++
++    u32KLen = BN_num_bytes(m);
++    if (u32KLen <= 128)
++    {
++        u32KLen = 128;
++    }
++    else if(u32KLen <= 256)
++    {
++        u32KLen = 256;
++    }
++    else if(u32KLen <= 512)
++    {
++        u32KLen = 512;
++    }
++    else
++    {
++        ENGINEerr(HISILICON_F_HISILICON_BN_MOD_EXP, HISILICON_R_BN_EXPAND_FAIL);
++        return OPENSSL_FAILURE;
++    }
++ 
++    pu8N = CRYPTO_malloc(u32KLen * 4, __FILE__, __LINE__);
++    if (HI_NULL == pu8N)
++    {
++        ENGINEerr(HISILICON_F_HISILICON_BN_MOD_EXP, HISILICON_R_BN_EXPAND_FAIL);
++        return OPENSSL_FAILURE;
++    }
++    memset(pu8N, 0, u32KLen * 4);
++    pu8K = pu8N + u32KLen;
++    pu8M = pu8K+ u32KLen;
++    pu8R = pu8M+ u32KLen;
++
++    BN_bn2bin(a, pu8M + (u32KLen - BN_num_bytes(a)));
++    BN_bn2bin(m, pu8N + (u32KLen - BN_num_bytes(m)));
++    BN_bn2bin(p, pu8K + (u32KLen - BN_num_bytes(p)));
++
++    stRsaEnc.stPriKey.pu8N = pu8N;
++    stRsaEnc.stPriKey.pu8D = pu8K;
++    stRsaEnc.stPriKey.u16NLen = u32KLen;
++    stRsaEnc.stPriKey.u16DLen = u32KLen;
++    stRsaEnc.enScheme = HI_UNF_CIPHER_RSA_ENC_SCHEME_NO_PADDING;
++    stRsaEnc.enCaType = HI_UNF_CIPHER_KEY_SRC_USER;
++
++    //HI_PRINT_HEX("M", pu8M, BN_num_bytes(a));
++    //HI_PRINT_HEX("N", pu8N, stRsaEnc.stPriKey.u16NLen);
++    //HI_PRINT_HEX("K", pu8K, stRsaEnc.stPriKey.u16DLen);
++
++    ret = HI_UNF_CIPHER_RsaPrivateEncrypt(&stRsaEnc, pu8M, u32KLen, pu8R, &u32KLen);
++    if( HI_SUCCESS != ret)
++    {
++        ENGINEerr(HISILICON_F_HISILICON_BN_MOD_EXP, HISILICON_R_BN_EXPAND_FAIL);
++        CRYPTO_free(pu8N);
++        return OPENSSL_FAILURE;
++    }
++
++    //HI_PRINT_HEX("C", pu8R, u32KLen);
++
++    BN_bin2bn(pu8R, u32KLen, r);
++    CRYPTO_free(pu8N);
++
++    return OPENSSL_SUCCESS;;
++}
++#  endif                        /* !OPENSSL_NO_RSA */
++
++/*
++ * RAND stuff Functions
++ */
++static void RAND_hisilicon_seed(const void *buf, int num)
++{
++    /*
++     * Nothing to do cause our crypto accelerator provide a true random
++     * generator
++     */
++
++    CHEESE();
++}
++
++static int RAND_hisilicon_rand_bytes(unsigned char *buf, int num)
++{
++    HI_S32 ret = HI_FAILURE;
++    HI_U32 randomNumber = 0;
++    HI_U32 i, j;
++
++    CHEESE();
++
++    for(i = 0; i < num/4;i++)
++    {
++        ret = HI_UNF_CIPHER_GetRandomNumber(&randomNumber);
++        if (HI_SUCCESS != ret)
++        {
++            return OPENSSL_FAILURE;
++        }
++        memcpy(buf + i * 4, (HI_VOID*)(&randomNumber), 4);
++    }
++
++    j = num % 4;
++    if(0 < j)
++    {
++        ret = HI_UNF_CIPHER_GetRandomNumber(&randomNumber);
++        if (HI_SUCCESS != ret)
++        {
++            return OPENSSL_FAILURE;
++        }
++        memcpy(buf + i * 4, (HI_VOID*)(&randomNumber), j);
++    }
++
++    return OPENSSL_SUCCESS;;
++}
++
++static int RAND_hisilicon_rand_status(void)
++{
++    CHEESE();
++
++    return OPENSSL_SUCCESS;;
++}
++
++static const EVP_CIPHER engine_aes_128_ecb = {
++    NID_aes_128_ecb,
++    16, 16, 16,
++    0 | EVP_CIPH_ECB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_192_ecb = {
++    NID_aes_192_ecb,
++    16, 24, 16,
++    0 | EVP_CIPH_ECB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_256_ecb = {
++    NID_aes_256_ecb,
++    16, 32, 16,
++    0 | EVP_CIPH_ECB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_128_cbc = {
++    NID_aes_128_cbc,
++    16, 16, 16,
++    0 | EVP_CIPH_CBC_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_192_cbc = {
++    NID_aes_192_cbc,
++    16, 24, 16,
++    0 | EVP_CIPH_CBC_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_256_cbc = {
++    NID_aes_256_cbc,
++    16, 32, 16,
++    0 | EVP_CIPH_CBC_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_128_cfb128= {
++    NID_aes_128_cfb128,
++    16, 16, 16,
++    0 | EVP_CIPH_CFB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_192_cfb128= {
++    NID_aes_192_cfb128,
++    16, 24, 16,
++    0 | EVP_CIPH_CFB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_256_cfb128= {
++    NID_aes_256_cfb128,
++    16, 32, 16,
++    0 | EVP_CIPH_CFB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_128_ofb128 = {
++    NID_aes_128_ofb128,
++    16, 16, 16,
++    0 | EVP_CIPH_OFB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_192_ofb128 = {
++    NID_aes_192_ofb128,
++    16, 24, 16,
++    0 | EVP_CIPH_OFB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_256_ofb128 = {
++    NID_aes_256_ofb128,
++    16, 32, 16,
++    0 | EVP_CIPH_OFB_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_128_ctr = {
++    NID_aes_128_ctr,
++    1, 16, 16,
++    EVP_CIPH_CTR_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_192_ctr = {
++    NID_aes_192_ctr,
++    1, 24, 16,
++    EVP_CIPH_CTR_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_aes_256_ctr = {
++    NID_aes_256_ctr,
++    1, 32, 16,
++    EVP_CIPH_CTR_MODE,
++    engine_aes_init_key,
++    engine_aes_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_AES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++/* The one for 3DES ... */
++static const EVP_CIPHER engine_des_ede3_ecb = {
++    NID_des_ede3_ecb,
++    8, 24, 8,
++    0 | EVP_CIPH_ECB_MODE,
++    engine_des_ede3_init_key,
++    engine_des_ede3_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_3DES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_des_ede3_cbc = {
++    NID_des_ede3_cbc,
++    8, 24, 8,
++    0 | EVP_CIPH_CBC_MODE,
++    engine_des_ede3_init_key,
++    engine_des_ede3_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_3DES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_des_ede3_cfb64 = {
++    NID_des_ede3_cfb64,
++    8, 24, 8,
++    0 | EVP_CIPH_CFB_MODE,
++    engine_des_ede3_init_key,
++    engine_des_ede3_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_3DES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++static const EVP_CIPHER engine_des_ede3_ofb64 = {
++    NID_des_ede3_ofb64,
++    8, 24, 8,
++    0 | EVP_CIPH_OFB_MODE,
++    engine_des_ede3_init_key,
++    engine_des_ede3_cipher,
++    engine_cipher_cleanup,
++    sizeof(HISI_3DES_KEY),
++    EVP_CIPHER_set_asn1_iv,
++    EVP_CIPHER_get_asn1_iv,
++    NULL,
++    NULL
++};
++
++/* The one for SHA ... */
++static const EVP_MD engine_sha1_md = {
++    NID_sha1,
++    NID_sha1WithRSAEncryption,
++    SHA_DIGEST_LENGTH,
++    EVP_MD_FLAG_ONESHOT,
++    /*
++     * 0,
++     *//*
++     * EVP_MD_FLAG_ONESHOT = x0001 digest can only handle a single block *
++     * XXX: set according to device info ...
++     */
++    engine_hash_init,
++    engine_hash_update,
++    engine_hash_final,
++    HI_NULL,             /* dev_crypto_sha_copy */
++    HI_NULL   ,          /* dev_crypto_sha_cleanup */
++    EVP_PKEY_RSA_method,
++    SHA_CBLOCK,
++    /* sizeof ( EVP_MD * ) + sizeof ( SHA_CTX ) */
++    sizeof(HI_HANDLE)
++};
++
++static const EVP_MD engine_sha256_md = {
++    NID_sha256,
++    NID_sha256WithRSAEncryption,
++    SHA256_DIGEST_LENGTH,
++    EVP_MD_FLAG_ONESHOT,
++    /*
++     * 0,
++     *//*
++     * EVP_MD_FLAG_ONESHOT = x0001 digest can only handle a single block *
++     * XXX: set according to device info ...
++     */
++    engine_hash_init,
++    engine_hash_update,
++    engine_hash_final,
++    HI_NULL,             /* dev_crypto_sha_copy */
++    HI_NULL,             /* dev_crypto_sha_cleanup */
++    EVP_PKEY_RSA_method,
++    SHA_CBLOCK,
++    /* sizeof ( EVP_MD * ) + sizeof ( SHA_CTX ) */
++    sizeof(HI_HANDLE)
++};
++
++/* General function cloned on hw_openbsd_dev_crypto one ... */
++static int engine_ciphers(ENGINE *e, const EVP_CIPHER **cipher,
++                          const int **nids, int nid)
++{
++    CHEESE();
++
++    if (!cipher)
++    {
++        /* We are returning a list of supported nids */
++        *nids = engine_cipher_nids;
++        return sizeof(engine_cipher_nids) / sizeof(engine_cipher_nids[0]);
++    }
++
++    /* We are being asked for a specific cipher */
++    switch(nid)
++    {
++        case NID_aes_128_ecb:
++            *cipher = &engine_aes_128_ecb;
++            break;
++        case NID_aes_192_ecb:
++            *cipher = &engine_aes_192_ecb;
++            break;
++        case NID_aes_256_ecb:
++            *cipher = &engine_aes_256_ecb;
++            break;
++        case NID_aes_128_cbc:
++            *cipher = &engine_aes_128_cbc;
++            break;
++        case NID_aes_192_cbc:
++            *cipher = &engine_aes_192_cbc;
++            break;
++        case NID_aes_256_cbc:
++            *cipher = &engine_aes_256_cbc;
++            break;
++        case NID_aes_128_cfb128:
++            *cipher = &engine_aes_128_cfb128;
++            break;
++        case NID_aes_192_cfb128:
++            *cipher = &engine_aes_192_cfb128;
++            break;
++        case NID_aes_256_cfb128:
++            *cipher = &engine_aes_256_cfb128;
++            break;
++        case NID_aes_128_ofb128:
++            *cipher = &engine_aes_128_ofb128;
++            break;
++        case NID_aes_192_ofb128:
++            *cipher = &engine_aes_192_ofb128;
++            break;
++        case NID_aes_256_ofb128:
++            *cipher = &engine_aes_256_ofb128;
++            break;
++        case NID_aes_128_ctr:
++            *cipher = &engine_aes_128_ctr;
++            break;
++        case NID_aes_192_ctr:
++            *cipher = &engine_aes_192_ctr;
++            break;
++        case NID_aes_256_ctr:
++            *cipher = &engine_aes_256_ctr;
++            break;
++        case NID_des_ede3_ecb:
++            *cipher = &engine_des_ede3_ecb;
++            break;
++        case NID_des_ede3_cbc:
++            *cipher = &engine_des_ede3_cbc;
++            break;
++        case NID_des_ede3_cfb64:
++            *cipher = &engine_des_ede3_cfb64;
++            break;
++        case NID_des_ede3_ofb64:
++            *cipher = &engine_des_ede3_ofb64;
++            break;
++        default:
++            PERROR("Error: invalid nid %d!\n", nid);
++            *cipher = NULL;
++            return OPENSSL_FAILURE;
++    }
++
++    return OPENSSL_SUCCESS;;
++}
++
++/* General function cloned on hw_openbsd_dev_crypto one ... */
++static int engine_digests(ENGINE *e, const EVP_MD **digest, const int **nids,
++                          int nid)
++{
++    CHEESE();
++
++    if (!digest)
++    {
++        /* We are returning a list of supported nids */
++        *nids = engine_digest_nids;
++        return sizeof(engine_digest_nids) / sizeof(engine_digest_nids[0]);
++    }
++
++    /* We are being asked for a specific digest */
++    if (nid == NID_sha1)
++    {
++        *digest = &engine_sha1_md;
++    }
++    else if (nid == NID_sha256)
++    {
++        *digest = &engine_sha256_md;
++    }
++    else
++    {
++        *digest = NULL;
++        return OPENSSL_FAILURE;
++    }
++    return OPENSSL_SUCCESS;;
++}
++
++
++#  ifndef OPENSSL_NO_RSA
++/*
++ * Our internal RSA_METHOD specific to hisilicon ENGINE providing pointers to
++ * our function
++ */
++static RSA_METHOD hisilicon_rsa = {
++    "hisilicon RSA method",
++    NULL,
++    NULL,
++    NULL,
++    NULL,
++    NULL,
++    RSA_hisilicon_bn_mod_exp,
++    NULL,
++    NULL,
++    0,
++    NULL,
++    NULL,
++    NULL
++};
++#  endif
++
++/*
++ * Our internal RAND_meth specific to hisilicon ZNGINE providing pointers to our
++ * function
++ */
++static RAND_METHOD hisilicon_rand = {
++    RAND_hisilicon_seed,
++    RAND_hisilicon_rand_bytes,
++    NULL,
++    NULL,
++    RAND_hisilicon_rand_bytes,
++    RAND_hisilicon_rand_status
++};
++
++
++/*
++ * This internal function is used by ENGINE_hisilicon () and possibly by the
++ * "dynamic" ENGINE support too ;-)
++ */
++static int bind_helper(ENGINE *e)
++{
++
++#  ifndef OPENSSL_NO_RSA
++    const RSA_METHOD *meth_rsa;
++#  endif
++
++    const RAND_METHOD *meth_rand;
++
++    CHEESE();
++
++    if (!ENGINE_set_id(e, engine_hisilicon_id) ||
++        !ENGINE_set_name(e, engine_hisilicon_name) ||
++#  ifndef OPENSSL_NO_RSA
++        !ENGINE_set_RSA(e, &hisilicon_rsa) ||
++#  endif
++        !ENGINE_set_RAND(e, &hisilicon_rand) ||
++        !ENGINE_set_destroy_function(e, hisilicon_destroy) ||
++        !ENGINE_set_init_function(e, hisilicon_init) ||
++        !ENGINE_set_finish_function(e, hisilicon_finish) ||
++        !ENGINE_set_digests(e, engine_digests) ||
++        !ENGINE_set_ciphers(e, engine_ciphers))
++    {
++        return OPENSSL_FAILURE;
++    }
++#  ifndef OPENSSL_NO_RSA
++    /*
++     * We know that the "PKCS1_SSLeay()" functions hook properly to the
++     * hisilicon-specific mod_exp and mod_exp_crt so we use those functions. NB:
++     * We don't use ENGINE_openssl() or anything "more generic" because
++     * something like the RSAref code may not hook properly, and if you own
++     * one of these cards then you have the right to do RSA operations on it
++     * anyway!
++     */
++    meth_rsa = RSA_PKCS1_SSLeay();
++
++    hisilicon_rsa.rsa_pub_enc  = meth_rsa->rsa_pub_enc;
++    hisilicon_rsa.rsa_pub_dec  = meth_rsa->rsa_pub_dec;
++    hisilicon_rsa.rsa_priv_enc = meth_rsa->rsa_priv_enc;
++    hisilicon_rsa.rsa_priv_dec = meth_rsa->rsa_priv_dec;
++    hisilicon_rsa.rsa_mod_exp  = meth_rsa->rsa_mod_exp;
++    /* meth_rsa->bn_mod_exp */
++    hisilicon_rsa.init = meth_rsa->init;
++    hisilicon_rsa.finish = meth_rsa->finish;
++#  endif
++
++    /*
++     * We use OpenSSL (SSLeay) meth to supply what we don't provide ;-*)
++     */
++    meth_rand = RAND_SSLeay();
++
++    /* meth_rand->seed ; */
++    /* hisilicon_rand.seed = meth_rand->seed ; */
++    /* meth_rand->bytes ; */
++    /* hisilicon_rand.bytes = meth_rand->bytes ; */
++    hisilicon_rand.cleanup = meth_rand->cleanup;
++    hisilicon_rand.add = meth_rand->add;
++    /* meth_rand->pseudorand ; */
++    /* hisilicon_rand.pseudorand = meth_rand->pseudorand ; */
++    /* hisilicon_rand.status = meth_rand->status ; */
++    /* meth_rand->status ; */
++
++    /* Ensure the hisilicon error handling is set up */
++    ERR_load_HISILICON_strings();
++    return OPENSSL_SUCCESS;;
++}
++
++/*
++ * As this is only ever called once, there's no need for locking (indeed -
++ * the lock will already be held by our caller!!!)
++ */
++static ENGINE *ENGINE_hisilicon(void)
++{
++
++    ENGINE *eng = ENGINE_new();
++
++    CHEESE();
++
++    if (!eng) {
++        return NULL;
++    }
++    if (!bind_helper(eng)) {
++        ENGINE_free(eng);
++        return NULL;
++    }
++
++    return eng;
++}
++
++#  ifdef ENGINE_DYNAMIC_SUPPORT
++static
++#  endif
++void ENGINE_load_hisilicon(void)
++{
++    CHEESE();
++
++    /* Copied from eng_[openssl|dyn].c */
++    ENGINE *toadd = ENGINE_hisilicon();
++    if (!toadd)
++        return;
++    ENGINE_add(toadd);
++    ENGINE_free(toadd);
++    ERR_clear_error();
++}
++
++/*
++ * This stuff is needed if this ENGINE is being compiled into a
++ * self-contained shared-library.
++ */
++#  ifdef ENGINE_DYNAMIC_SUPPORT
++static int bind_fn(ENGINE *e, const char *id)
++{
++
++    CHEESE();
++
++    if (id && (strcmp(id, engine_hisilicon_id) != 0)) {
++        return OPENSSL_FAILURE;
++    }
++    if (!bind_helper(e)) {
++        return OPENSSL_FAILURE;
++    }
++
++    return OPENSSL_SUCCESS;;
++}
++
++IMPLEMENT_DYNAMIC_CHECK_FN()
++    IMPLEMENT_DYNAMIC_BIND_FN(bind_fn)
++#  endif                        /* ENGINE_DYNAMIC_SUPPORT */
++
++# endif                         /* !OPENSSL_NO_HW_HISILICON */
++#endif                          /* !OPENSSL_NO_HW */
+diff --git a/demos/engines/hisilicon/hw_hisilicon.ec b/demos/engines/hisilicon/hw_hisilicon.ec
+new file mode 100644
+index 0000000..b6d74fb
+--- /dev/null
++++ b/demos/engines/hisilicon/hw_hisilicon.ec
+@@ -0,0 +1,8 @@
++# configuration file for util/mkerr.pl
++#
++# use like this:
++#
++#	perl ../../../util/mkerr.pl -conf hw_hisilicon.ec \
++#		-nostatic -staticloader -write *.c
++
++L HISILICON  hw_hisilicon_err.h			hw_hisilicon_err.c
+diff --git a/demos/engines/hisilicon/hw_hisilicon.h b/demos/engines/hisilicon/hw_hisilicon.h
+new file mode 100644
+index 0000000..bcca0e9
+--- /dev/null
++++ b/demos/engines/hisilicon/hw_hisilicon.h
+@@ -0,0 +1,15 @@
++#ifndef        _HW_HISILICON_H_
++# define _HW_HISILICON_H_
++
++# include <stdio.h>
++
++# ifdef  __cplusplus
++extern "C" {
++# endif                         /* __cplusplus */
++
++#define MAX_RSA_KEY_LEN         512
++
++# ifdef  __cplusplus
++}
++# endif                         /* __cplusplus */
++#endif                          /* !_HW_ZENCOD_H_ */
+diff --git a/demos/engines/hisilicon/hw_hisilicon_err.c b/demos/engines/hisilicon/hw_hisilicon_err.c
+new file mode 100644
+index 0000000..fdfcb5d
+--- /dev/null
++++ b/demos/engines/hisilicon/hw_hisilicon_err.c
+@@ -0,0 +1,137 @@
++/* hw_hisilicon_err.c */
++/* ====================================================================
++ * Copyright (c) 1999-2018 The OpenSSL Project.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ *
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in
++ *    the documentation and/or other materials provided with the
++ *    distribution.
++ *
++ * 3. All advertising materials mentioning features or use of this
++ *    software must display the following acknowledgment:
++ *    "This product includes software developed by the OpenSSL Project
++ *    for use in the OpenSSL Toolkit. (http://www.OpenSSL.org/)"
++ *
++ * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
++ *    endorse or promote products derived from this software without
++ *    prior written permission. For written permission, please contact
++ *    openssl-core@OpenSSL.org.
++ *
++ * 5. Products derived from this software may not be called "OpenSSL"
++ *    nor may "OpenSSL" appear in their names without prior written
++ *    permission of the OpenSSL Project.
++ *
++ * 6. Redistributions of any form whatsoever must retain the following
++ *    acknowledgment:
++ *    "This product includes software developed by the OpenSSL Project
++ *    for use in the OpenSSL Toolkit (http://www.OpenSSL.org/)"
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
++ * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
++ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
++ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
++ * OF THE POSSIBILITY OF SUCH DAMAGE.
++ * ====================================================================
++ *
++ * This product includes cryptographic software written by Eric Young
++ * (eay@cryptsoft.com).  This product includes software written by Tim
++ * Hudson (tjh@cryptsoft.com).
++ *
++ */
++
++/*
++ * NOTE: this file was auto generated by the mkerr.pl script: any changes
++ * made to it will be overwritten when the script next updates this file,
++ * only reason strings will be preserved.
++ */
++
++#include <stdio.h>
++#include <openssl/err.h>
++#include "hw_hisilicon_err.h"
++
++/* BEGIN ERROR CODES */
++#ifndef OPENSSL_NO_ERR
++
++# define ERR_FUNC(func) ERR_PACK(0,func,0)
++# define ERR_REASON(reason) ERR_PACK(0,0,reason)
++
++static ERR_STRING_DATA HISILICON_str_functs[] = {
++    {ERR_FUNC(HISILICON_F_HISILICON_BN_MOD_EXP), "HISILICON_BN_MOD_EXP"},
++    {ERR_FUNC(HISILICON_F_HISILICON_FINISH), "HISILICON_FINISH"},
++    {ERR_FUNC(HISILICON_F_HISILICON_INIT), "HISILICON_INIT"},
++    {0, NULL}
++};
++
++static ERR_STRING_DATA HISILICON_str_reasons[] = {
++    {ERR_REASON(HISILICON_R_ALREADY_LOADED), "already loaded"},
++    {ERR_REASON(HISILICON_R_BN_EXPAND_FAIL), "bn expand fail"},
++    {ERR_REASON(HISILICON_R_UNIT_FAILURE), "unit failure"},
++    {0, NULL}
++};
++
++#endif
++
++#ifdef HISILICON_LIB_NAME
++static ERR_STRING_DATA HISILICON_lib_name[] = {
++    {0, HISILICON_LIB_NAME},
++    {0, NULL}
++};
++#endif
++
++static int HISILICON_lib_error_code = 0;
++static int HISILICON_error_init = 1;
++
++static void ERR_load_HISILICON_strings(void)
++{
++    if (HISILICON_lib_error_code == 0)
++        HISILICON_lib_error_code = ERR_get_next_error_library();
++
++    if (HISILICON_error_init) {
++        HISILICON_error_init = 0;
++#ifndef OPENSSL_NO_ERR
++        ERR_load_strings(HISILICON_lib_error_code, HISILICON_str_functs);
++        ERR_load_strings(HISILICON_lib_error_code, HISILICON_str_reasons);
++#endif
++
++#ifdef HISILICON_LIB_NAME
++        HISILICON_lib_name->error = ERR_PACK(HISILICON_lib_error_code, 0, 0);
++        ERR_load_strings(0, HISILICON_lib_name);
++#endif
++    }
++}
++
++static void ERR_unload_HISILICON_strings(void)
++{
++    if (HISILICON_error_init == 0) {
++#ifndef OPENSSL_NO_ERR
++        ERR_unload_strings(HISILICON_lib_error_code, HISILICON_str_functs);
++        ERR_unload_strings(HISILICON_lib_error_code, HISILICON_str_reasons);
++#endif
++
++#ifdef HISILICON_LIB_NAME
++        ERR_unload_strings(0, HISILICON_lib_name);
++#endif
++        HISILICON_error_init = 1;
++    }
++}
++
++static void ERR_HISILICON_error(int function, int reason, char *file, int line)
++{
++    if (HISILICON_lib_error_code == 0)
++        HISILICON_lib_error_code = ERR_get_next_error_library();
++    ERR_PUT_error(HISILICON_lib_error_code, function, reason, file, line);
++}
+diff --git a/demos/engines/hisilicon/hw_hisilicon_err.h b/demos/engines/hisilicon/hw_hisilicon_err.h
+new file mode 100644
+index 0000000..6d07f15
+--- /dev/null
++++ b/demos/engines/hisilicon/hw_hisilicon_err.h
+@@ -0,0 +1,88 @@
++/* ====================================================================
++ * Copyright (c) 2001-2018 The OpenSSL Project.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ *
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer. 
++ *
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in
++ *    the documentation and/or other materials provided with the
++ *    distribution.
++ *
++ * 3. All advertising materials mentioning features or use of this
++ *    software must display the following acknowledgment:
++ *    "This product includes software developed by the OpenSSL Project
++ *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
++ *
++ * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
++ *    endorse or promote products derived from this software without
++ *    prior written permission. For written permission, please contact
++ *    openssl-core@openssl.org.
++ *
++ * 5. Products derived from this software may not be called "OpenSSL"
++ *    nor may "OpenSSL" appear in their names without prior written
++ *    permission of the OpenSSL Project.
++ *
++ * 6. Redistributions of any form whatsoever must retain the following
++ *    acknowledgment:
++ *    "This product includes software developed by the OpenSSL Project
++ *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
++ * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
++ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
++ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
++ * OF THE POSSIBILITY OF SUCH DAMAGE.
++ * ====================================================================
++ *
++ * This product includes cryptographic software written by Eric Young
++ * (eay@cryptsoft.com).  This product includes software written by Tim
++ * Hudson (tjh@cryptsoft.com).
++ *
++ */
++
++#ifndef HEADER_ZENCOD_ERR_H
++# define HEADER_ZENCOD_ERR_H
++
++# ifdef  __cplusplus
++extern "C" {
++# endif
++
++/* BEGIN ERROR CODES */
++/*
++ * The following lines are auto generated by the script mkerr.pl. Any changes
++ * made after this point may be overwritten when the script is next run.
++ */
++
++static void ERR_load_HISILICON_strings(void);
++static void ERR_unload_HISILICON_strings(void);
++static void ERR_HISILICON_error(int function, int reason, char *file, int line);
++# define HISILICONerr(f,r) ERR_HISILICON_error((f),(r),__FILE__,__LINE__)
++
++/* Error codes for the HISILICON functions. */
++
++/* Function codes. */
++# define HISILICON_F_HISILICON_BN_MOD_EXP                 100
++# define HISILICON_F_HISILICON_FINISH                     101
++# define HISILICON_F_HISILICON_INIT                       102
++
++/* Reason codes. */
++# define HISILICON_R_ALREADY_LOADED                       100
++# define HISILICON_R_BN_EXPAND_FAIL                       101
++# define HISILICON_R_UNIT_FAILURE                         102
++
++# ifdef  __cplusplus
++}
++# endif
++#endif
+diff --git a/test/Makefile b/test/Makefile
+index a324eeb..6aff67e 100644
+--- a/test/Makefile
++++ b/test/Makefile
+@@ -28,6 +28,8 @@ DLIBCRYPTO= ../libcrypto.a
+ DLIBSSL= ../libssl.a
+ LIBCRYPTO= -L.. -lcrypto
+ LIBSSL= -L.. -lssl
++LIBSDK = -L$(SDK_OUT_DIR)/lib -lhi_cipher  -lsecurec -lpthread -lrt -lm -ldl -lstdc++
++LIBSDK += -L../demos/engines/hisilicon -lhisilicon
+ 
+ BNTEST=		bntest
+ ECTEST=		ectest
+@@ -410,7 +412,7 @@ $(DLIBCRYPTO):
+ BUILD_CMD=shlib_target=; if [ -n "$(SHARED_LIBS)" ]; then \
+ 		shlib_target="$(SHLIB_TARGET)"; \
+ 	fi; \
+-	LIBRARIES="$(LIBSSL) $(LIBCRYPTO) $(LIBKRB5)"; \
++	LIBRARIES="$(LIBSSL) $(LIBCRYPTO) $(LIBKRB5) $(LIBSDK)"; \
+ 	$(MAKE) -f $(TOP)/Makefile.shared -e \
+ 		CC="$${CC}" APPNAME=$$target$(EXE_EXT) OBJECTS="$$target.o $$exobj" \
+ 		LIBDEPS="$(PEX_LIBS) $$LIBRARIES $(EX_LIBS)" \

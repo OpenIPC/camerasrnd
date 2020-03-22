@@ -1,0 +1,112 @@
+# Research & Development repository about cheap cameras (mainly XM manufactured)
+
+PRs with additional information and corrections are welcome.
+
+## FAQs
+
+[How to get telnet on camera](get_telnet.md)
+
+[Russian FAQ](doc/FAQ.md). We need help to translate it to English (and I hope
+to several popular languages too).
+
+## Books for newbies
+
+[Chris Simmonds - Mastering Embedded Linux Programming](https://books.google.com/books?id=4Hc5DwAAQBAJ&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=onepage&q&f=false)
+
+## Telegram groups
+
+[OpenIPC English](https://t.me/openipc)
+
+[OpenIPC Russian, русская группа](https://t.me/joinchat/DJ_qFkdXU2CquZhdsVKlzg)
+
+[OpenIPC Iranian, یم OpenIpc برای کاربران ایرانی](https://t.me/joinchat/EgJJ10_xsEGEL1pnV4kKig)
+
+## Chip families information
+
+| Chips                                              | shortcode   |
+| -------------------------------------------------- | ----------- |
+| hi3516av100, hi3516dv100                           | hi3516av100 |
+| hi3519v101, hi3516av200                            | hi3516av200 |
+| hi3516cv100, hi3518cv100, hi3518ev100              | hi3516cv100 |
+| hi3518cv200, hi3518ev200, hi3518ev201              | hi3516cv200 |
+| [hi3516cv300, hi3516ev100](https://drive.google.com/file/d/1xZf-YiYSmB8sn9Lnj3obsR-x4AqDPa4D/view) | hi3516cv300 |
+| hi3516cv500, hi3516dv300, hi3516av300              | hi3516cv500 |
+| [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view), [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300 | hi3516ev200 |
+| hi3519av100                                        | hi3519av100 |
+| hi3559av100                                        | hi3559av100 |
+
+If you know about newer versions of full datasheets or can share them for different
+camera types don't hesitate to make a PR.
+
+## Performance and sensors
+
+| Chip | CPU | Encoder | JPEG substream | Sensors |
+|---|---|---|---|---
+| hi3516av100 | A7 600MHz | 5MP@30fps, 1080P@60fps, 1080P@30fps | 5MP@8fps | IMX178, IMX385, IMX290, IMX185, OV4689, AR0237
+| hi3516dv100 | A7 600MHz | 5MP@15fps, 3MP@30fps, 1080P@30fps | 5MP@8fps | IMX178, IMX385, IMX290, IMX185, OV4689, AR0237
+| hi3519v101 | A17 1.25GHz + A7 800MHz | 12MP@15fps, 8MP@30fps | 8MP@30fps | IMX226, IMX274
+| hi3516av200 | A17 1.25GHz + A7 800MHz | 8@15fps, 6@30fps | 8MP@30fps | IMX274, OS08A10
+| hi3516dv300 | A7 900MHz (NNIE 1.0Tops) | 5MP@20fps, 1080P@30fps | 16MP@10fps | IMX385, IMX327
+| hi3516cv500 | A7 900MHz (NNIE 0.5Tops) | 3MP@20fps, 1080P@30fps | 16MP@10fps | IMX327
+| hi3518ev200 | ARM926 540MHz | 720@30fps | 2MP@5fps | AR0130, OV9732, OV9712, F02
+| hi3516ev100 | ARM926 800MHz | 1080@20fps | 2MP@5fps | IMX291, IMX323, SC3235
+| hi3516cv300 | ARM926 800MHz | 1080@30fps | 2MP@5fps | IMX291, IMX323, SC3235
+| hi3516ev300 | A7 900MHz | 4MP@15fps, 3MP@30fps | 4MP@5fps | IMX335
+| hi3516ev200 | A7 900MHz | 3MP@20fps, 1080P@30fps | 3MP@5fps | SC3235, IMX307
+
+### How to add new hardware support
+
+Official guides
+
+| Topic | Document name | Date | Issue | Download |
+| ----- | ------------- | ---- | ----- | -------- |
+
+
+Sensor
+Flash
+
+## SDKs
+
+| Family      | Kernel  | U-Boot | MPP    |
+| ----------- | ------- | ------ | ------ |
+| hi3516av100 | 3.4.35  |        | v2     |
+| hi3516av200 | 3.18.20 |        | v3     |
+| hi3516cv100 | 3.0.8   |        | v1/v2? |
+| hi3516cv200 | 3.4.35  |        | v2     |
+| hi3516cv300 | 3.18.20 |        | v3     |
+| hi3516cv500 | 4.9.37  |        | v4     |
+| hi3516ev200 | 4.9.37  |        | v4     |
+| hi3516ev300 | 4.9.37  |        | v4     |
+| hi3519av100 | 4.9.37  |        | v4     |
+| hi3559av100 | 4.9.37  |        | v4     |
+
+[SDK archive](https://dl.openipc.org/SDK/) of OpenIPC project.
+
+## Development
+
+### Cross-compilation
+
+- [Known toolchains](toolchains.md)
+
+- [Instructions for cross-compilation for different common
+  software](crosscompile/index.md)
+
+### Development using SDK
+
+[Building custom kernel](kernel/build.md)
+
+### Debugging
+
+- Debugging on board using gdbserver
+
+- [Ltrace debug](debug/ltrace.md)
+
+### Development tricks
+
+- [Running ARM binaries using QEMU on dev host](qemu/userspace.md)
+
+- [Changing files on readonly volumes](tricks/romounts.md)
+
+### RE
+
+- [Reverse binary Linux kernel](reverse/kernel.md)
