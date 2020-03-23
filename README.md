@@ -84,6 +84,12 @@ Flash
 
 ## Development
 
+### Low level programming
+
+* [ARM9EJ-S Technical Reference Manual](http://infocenter.arm.com/help/topic/com.arm.doc.ddi0222b/DDI0222.pdf)
+
+* [PrimeCell UART (PL011) Technical Reference Manual](http://infocenter.arm.com/help/topic/com.arm.doc.ddi0183f/DDI0183.pdf)
+
 ### Cross-compilation
 
 - [Known toolchains](toolchains.md)
