@@ -18,10 +18,13 @@ Sonia, у XM стал Sofia.
 
 Есть ряд наработок:
 
-* [Python-DVR](https://github.com/NeiroNx/python-dvr), поддерживает обновление
-  прошивок
+* [Python-DVR](https://github.com/NeiroNx/python-dvr), поддерживает обновление прошивок
+
 * https://github.com/667bdrm/sofiactl
+
 * https://github.com/alexshpilkin/dvrip
+    
+* [github.com/johndoe31415/numenworld-ipcam](https://github.com/johndoe31415/numenworld-ipcam/blob/master/nwipcam)
 
 ## Делаю killall Sofia, через некоторое время камера уходит в reboot
 
