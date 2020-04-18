@@ -4,7 +4,7 @@
 
 ### Sony
 
-![Sensor diagram](sensors/sony_sensors.jpg?raw=true)
+![Sensor diagram](sony_sensors.jpg?raw=true)
 
 Also available on [official page](https://www.sony-semicon.co.jp/e/products/IS/security/product.html)
 
