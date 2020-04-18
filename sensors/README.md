@@ -15,6 +15,8 @@ About [Starvis technology](https://www.sony-semicon.co.jp/e/products/IS/security
 | Sensor | Datasheet |
 |---|---|
 | IMX185 |
+| IMX222 | [link](https://drive.google.com/file/d/1pw9lW7Fn00ihB2sPszEi7WfM1N0BonCg/view?usp=sharing)
+| IMX224 | [link](https://drive.google.com/file/d/1vgIiAgVh4uShICfPypTqZRzJQtCdf0LX/view?usp=sharing)
 | IMX225 | [link](https://drive.google.com/file/d/1aNWiM1V8eykAPOLm_xq1FTz0kglbz8sQ/view?usp=sharing)
 | IMX226 |
 | IMX238 | [link](https://drive.google.com/file/d/1NwTbpz41D5w2ZPZ71STblf_moybL4TZm/view?usp=sharing)
@@ -22,6 +24,9 @@ About [Starvis technology](https://www.sony-semicon.co.jp/e/products/IS/security
 | IMX291 | [link](https://drive.google.com/file/d/1skyWSEPuAQ4dRwa2rmR67g1yBdU0iIY9/view?usp=sharing)
 | IMX322 |
 | IMX323 | [link](https://drive.google.com/file/d/16OYbmSyHPLMbZyxP-1JpxtCKgzbnuHkP/view?usp=sharing)
+| IMX327 | [link](https://drive.google.com/file/d/1uVdGNVjjt0bsaSwUdH_wiukE0Kqcwgjy/view?usp=sharing)
+| IMX307 |
+| IMX335 | [link](https://drive.google.com/file/d/1RM23VCHMuaxBQzVlaLLv9rk6jdOa4uij/view?usp=sharing)
 | IMX385
 
 All listed datasheets were taken from open sources.
