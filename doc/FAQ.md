@@ -16,9 +16,19 @@
 - [Если ли способы управлять камерой с помощью закрытого китайского
     протокола?](#netsdk)
 
+- [В каком формате записывать звук для камеры?](#sound]
+
 ### Хакинг
 
 - [Делаю killall Sofia, через некоторое время камера уходит в reboot](#watchdog)
+
+### Железо
+
+- [Как коннектор на плате Hi35 называется?](#jst)
+
+- [Советы по PoE](#poe)
+
+- [Как работает инфракрасная подсветка?](#ir)
 
 ## Как включить Telnet сервер? <a name="activate_telnet"></a>
 
@@ -68,8 +78,8 @@ Sonia, у XM стал Sofia.
 
 * [github.com/johndoe31415/numenworld-ipcam](https://github.com/johndoe31415/numenworld-ipcam/blob/master/nwipcam)
 
-## Делаю killall Sofia, через некоторое время камера уходит в reboot <a
-name="watchdog"></a>
+## Делаю killall Sofia, через некоторое время камера уходит в reboot
+<a name="watchdog"></a>
 
 Ты можешь просто выгрузить модуль watchdoga, например `rmmod xm_watchdog`
 
@@ -154,7 +164,7 @@ setenv serverip 192.168.1.254; sf probe 0; sf lock 0; run dc; run dr; run du; ru
 
 Еще один источник прошивок https://www.cctvsp.ru/articles/obnovlenie-proshivok-dlya-ip-kamer-ot-xiong-mai
 
-## Как коннектор на плате Hi35 называется?
+## Как коннектор на плате Hi35 называется? <a name="jst"></a>
 
 разьемы   JST    шаг  1,25 мм
 https://ru.aliexpress.com/item/32787942551.html
@@ -192,11 +202,20 @@ sudo modprobe mtdblock
 sudo dd if=rootfs_hi3516cv300_128k.jffs2 of=/dev/mtdblock0
 sudo mount -t jffs2 /dev/mtdblock0 /mnt
 ```
-## PoE
+
+## В каком формате записывать звук для камеры? <a name="sound"></name>
+
+```
+sox input.mp3 -t al -r 8000 -c 1 -b 8 output.alaw
+```
+
+(с) Dmitry Ermakov
+
+## Советы по PoE <a name="poe"></a>
 
 На 12В лучше не использовать коннекторы RJ-45, пригорят - токи в 4 раза больше, чем на 48В
 
-## Как работает инфракрасная подсветка?
+## Как работает инфракрасная подсветка? <a name="ir"></a>
 
 Камера ИК подсветкой не управляет, подсветка управляет камерой. Т.е. по третьему
 проводу на камеру сигнал идёт, что темного стало, когда фоторезюк затемняется и
@@ -309,11 +328,3 @@ init=linuxrc mem=56M console=ttyAMA0,115200 root=/dev/mtdblock1 rootfstype=squas
 ```
 
 (c) Sergey Sharshunov
-
-## В каком формате записывать звук для камеры?
-
-```
-sox input.mp3 -t al -r 8000 -c 1 -b 8 output.alaw
-```
-
-(с) Dmitry Ermakov
