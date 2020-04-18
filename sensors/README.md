@@ -10,6 +10,25 @@ Also available on [official page](https://www.sony-semicon.co.jp/e/products/IS/s
 
 About [Starvis technology](https://www.sony-semicon.co.jp/e/products/IS/security/technology.html)
 
+#### Datasheets
+
+| Sensor | Datasheet |
+|---|---|
+| IMX185 |
+| IMX225 | [link](https://drive.google.com/file/d/1aNWiM1V8eykAPOLm_xq1FTz0kglbz8sQ/view?usp=sharing)
+| IMX226 |
+| IMX238 | [link](https://drive.google.com/file/d/1NwTbpz41D5w2ZPZ71STblf_moybL4TZm/view?usp=sharing)
+| IMX290 | [link](https://drive.google.com/file/d/1wlnU33pOqqfJqtWPccjj73QFotzRHe4Z/view?usp=sharing)
+| IMX291 | [link](https://drive.google.com/file/d/1skyWSEPuAQ4dRwa2rmR67g1yBdU0iIY9/view?usp=sharing)
+| IMX322 |
+| IMX323 | [link](https://drive.google.com/file/d/16OYbmSyHPLMbZyxP-1JpxtCKgzbnuHkP/view?usp=sharing)
+| IMX385
+
+All listed datasheets were taken from open sources.
+
+If you know about newer versions of full datasheets or can share them for different
+sensor types don't hesitate to make a PR.
+
 ## Sensors in XM cameras
 
 | Last numbers in camera model | Sensor  |
