@@ -108,7 +108,7 @@ Each field is explained as follows:
 
     - `C00`: FPGA-based
 
-    - `C01`: type A compiler
+    - `C01`: type A compiler (e.g. `uclibc` based sysroot)
 
     - `C02`: type B compiler (e.g. `glibc` based sysroot)
 
