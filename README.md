@@ -23,6 +23,8 @@ to several popular languages too).
 
 ## Chip families information
 
+Hardware structuring ([courtesy of OpenHisiIpCam project](https://github.com/OpenHisiIpCam/br-hisicam/blob/master/README.md#chip-families-information)):
+
 | Chips                                              | shortcode   |
 | -------------------------------------------------- | ----------- |
 | hi3516av100, hi3516dv100                           | hi3516av100 |
@@ -56,6 +58,8 @@ camera types don't hesitate to make a PR.
 
 ### How to add new hardware support
 
+[Your new ARM SoC Linux support check-list](https://elinux.org/images/a/ad/Arm-soc-checklist.pdf)
+
 Official guides
 
 | Topic | Document name | Date | Issue | Download |
@@ -79,6 +83,48 @@ Flash
 | hi3516ev300 | 4.9.37  |        | v4     |
 | hi3519av100 | 4.9.37  |        | v4     |
 | hi3559av100 | 4.9.37  |        | v4     |
+
+HiSilicon SDK naming principles:
+
+`Hi35xxVxxxRxxxCxxSPCxxy`
+
+Each field is explained as follows:
+
+* `Hi35xx`, segment contains chip type
+
+* `Vxxx` segment contains the type of chip version
+
+* `Rxxx` segment contains the release package type:
+
+    - `R001`: Linux SDK
+
+    - `R002`: Huawei LiteOS SDK
+
+    - `R003`: Linux RDK reference design
+
+    - other R bit is not used
+
+* `Cxx` segment contains compiler specific environment
+
+    - `C00`: FPGA-based
+
+    - `C01`: type A compiler
+
+    - `C02`: type B compiler (e.g. `glibc` based sysroot)
+
+    - `C03` and `C04` are reserved
+
+    - `C05`: Huawei LiteOS
+
+    - `C09`: based on Demo version
+
+* `SPCxxy` segment shows current version
+
+    `xx` for each next release will be incremented by 1 (releases with fixed errors,
+    additional features, etc)
+
+    `xx0` indicates normal version, for temporary versions last character could
+    be incremented by 1 in range from `1-9` and `A-z`.
 
 [SDK archive](https://dl.openipc.org/SDK/) of OpenIPC project.
 
