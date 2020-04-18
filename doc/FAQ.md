@@ -151,6 +151,8 @@ rm -rf /mnt/mtd/*
 # Как посмотреть логи энкодера?
 
 ```
+echo "all=5" > /proc/umap/logmpp # более детальный лог
+
 cat /dev/logmpp
 cat /proc/umap/vpss
 cat /proc/umap/venc
