@@ -56,6 +56,10 @@ camera types don't hesitate to make a PR.
 | hi3516ev300 | A7 900MHz | 4MP@15fps, 3MP@30fps | 4MP@5fps | IMX335
 | hi3516ev200 | A7 900MHz | 3MP@20fps, 1080P@30fps | 3MP@5fps | SC3235, IMX307
 
+## Hardware
+
+- [Sensors information](sensors/README.md)
+
 ### How to add new hardware support
 
 [Your new ARM SoC Linux support check-list](https://elinux.org/images/a/ad/Arm-soc-checklist.pdf)
