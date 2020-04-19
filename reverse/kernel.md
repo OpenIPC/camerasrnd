@@ -1,6 +1,14 @@
 # How to reverse binary Linux kernel
 
-## Extract a piggy
+## Contents
+
+- [Extract a piggy](#piggy)
+
+- [Examine a procedure](#kallsyms)
+
+- [Disable built-in driver](#disable-builtin)
+
+## Extract a piggy <a name="piggy"></a>
 
 The term `piggy` was originally used to describe a "piggy-back" concept. In this
 case, the binary kernel image is piggy-backed onto the bootstrap loader to
@@ -89,7 +97,7 @@ It's the `vmlinux` image from firmware.
   ![](images/IDA_reference_start.png?raw=true)
 
 - Open `original` in your favorite disassembler. I like IDA, so let me show the
-    example:
+  example:
 
   1. Select `Processor type` as `ARM Little-endian [ARM]`
 
@@ -100,7 +108,7 @@ It's the `vmlinux` image from firmware.
   ![](images/IDA_original_load.png?raw=true)
 
   4. Select `Create RAM section` instead `Create ROM section` and copy-paste our
-  suggested addresses as shown on image:
+     suggested addresses as shown on image:
 
   ![](images/IDA_original_sections.png?raw=true)
 
@@ -117,3 +125,29 @@ It's the `vmlinux` image from firmware.
   9. Check out that you have same byte sequence as in `original` image:
 
   ![](images/IDA_original_opcodes.png?raw=true)
+
+## Examine a procedure <a name="kallsyms"></a>
+
+Use `/proc/kallsyms` to find address of concrete kernel symbol like this:
+
+```sh
+$ cat /proc/kallsyms | grep ' T ' | grep hisi_spi_nor_driver
+```
+
+## Disable built-in driver <a name=disable-builtin></a>
+
+Advice was proposed on [SO](https://unix.stackexchange.com/a/474552/364571).
+
+To do this, you'll need to add `initcall_blacklist=<driver_init>` as a kernel
+boot option where `driver_init` is the driver initialization function - you'll
+have to look through your kernel's sources to figure out what name needs to be
+used. As a concrete example, `initcall_blacklist=hisi_spi_nor_driver_init` could
+be used to blacklist internal flash driver on original kernel to test its some
+opensource improvements.
+
+| Driver     | Init entrypoint          | What was disabled        | Remark                                        |
+| ---------- | ------------------------ | ------------------------ | --------------------------------------------- |
+| hisi_spi   | hisi_spi_nor_driver_init | Disable SPI Flash driver |
+| hisi-femac | hisi_femac_driver_init   | Disable Ethernet driver  |
+| hibvt-i2c  | hibvt_i2c_driver_init    | Disable I2C driver       | Crash on `hi_piris.ko` module load w/o driver |
+| himci      | himci_init               | Disable SD/eMMC driver   |
