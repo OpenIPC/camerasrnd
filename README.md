@@ -149,9 +149,11 @@ Each field is explained as follows:
 
 ### Development using SDK
 
-[Building custom kernel](kernel/build.md)
+- [Building custom kernel](kernel/build.md)
 
-[Building busybox](busybox/build.md)
+- [Building Busybox](busybox/build.md)
+
+- [Hacking camera using NFS](hacking/nfs.md)
 
 ### Debugging
 
