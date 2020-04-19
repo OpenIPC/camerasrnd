@@ -53,3 +53,5 @@ sensor types don't hesitate to make a PR.
 ## Opensource code
 
 - [HiSilison sensor support code from OpenIPC project](https://github.com/ZigFisher/Glutinium/tree/master/hisi-sensors/src)
+
+- [Sensor drivers from Dafang Hacking](https://github.com/EliasKotlyar/Xiaomi-Dafang-Software/tree/master/drivers/sensors)

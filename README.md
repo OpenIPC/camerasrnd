@@ -151,6 +151,8 @@ Each field is explained as follows:
 
 [Building custom kernel](kernel/build.md)
 
+[Building busybox](busybox/build.md)
+
 ### Debugging
 
 - Debugging on board using gdbserver
