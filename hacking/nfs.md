@@ -57,13 +57,23 @@ mount -t proc none /proc
 mount -t sysfs none /sys
 /etc/init.d/dnode
 /sbin/mdev -s
+
+# original firmware init code substitution from /etc/init.d/rcS
+mount -t ramfs  /dev/mem  /var/
+mkdir -p /var/tmp
+# skipped net
+mkdir -p /mnt/mtd/Config /mnt/mtd/Log /mnt/mtd/Config/ppp /mnt/mtd/Config/Json
+ulimit -s 4096
+/usr/etc/loadmod
+# dvrHelper /lib/modules /usr/bin/Sofia 127.0.0.1 9578 1 &
 EOF
 ```
 
-Use U-Boot to temporary load dev environment:
+Use U-Boot to temporary load dev environment (adjust `mem` param to your actual
+board):
 
 ```
-setenv bootargs console=ttyAMA0,115200 panic=20 root=/dev/ram0 ro initrd=0x81220000,626688 rdinit=/bin/sh ip=192.168.26.178:192.168.26.1:192.168.26.1:255.255.255.0:camera1::off\\;
+setenv bootargs mem=56M console=ttyAMA0,115200 panic=20 root=/dev/ram0 ro initrd=0x81220000,626688 rdinit=/bin/sh ip=192.168.26.178:192.168.26.1:192.168.26.1:255.255.255.0:camera1::off\\;
 
 setenv ipaddr 192.168.26.178
 setenv serverip 192.168.26.219
