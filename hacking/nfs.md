@@ -40,7 +40,7 @@ Navigate to new NFS root made in previous step and copy `/boot/uImage` to your
 tftp server. Fell free to rename file for simplifying usage (like
 `uImage.cv300` in our example).
 
-Build special Busybox version (like [Rescue mode](../busybox/build.md), but with
+Build special Busybox version (like [Rescue mode](../busybox/build.md#rescue), but with
 modified `/etc/init.d/rcS` file):
 
 ```sh

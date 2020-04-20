@@ -11,7 +11,7 @@ make ARCH=arm CROSS_COMPILE=arm-hisiv500-linux- menuconfig
 LDFLAGS="--static" make ARCH=arm CROSS_COMPILE=arm-hisiv500-linux- install CONFIG_PREFIX=./_rootfs
 ```
 
-## Building Busybox-only rootfs (Rescue mode)
+## Building Busybox-only rootfs (Rescue mode) <a name="rescue"></a>
 
 ```sh
 pushd _rootfs
