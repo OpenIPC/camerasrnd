@@ -44,19 +44,18 @@ Build special Busybox version (like [Rescue mode](../busybox/build.md), but with
 modified `/etc/init.d/rcS` file):
 
 ```sh
-cat <<EOF > etc/init.d/rcS
+cat <<'EOF' > etc/init.d/rcS
 #!/bin/sh
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 echo "Waiting for network..."
 sleep 5
 mount -t nfs -o nolock 192.168.26.219:/srv/cv300 /new
-cp /sbin/mdev /new/sbin/
 mkdir -p /new/mnt/old_root/
 pivot_root /new /new/mnt/old_root/
-mount -t proc none /proc
-mount -t sysfs none /sys
-/etc/init.d/dnode
-/sbin/mdev -s
+. /etc/init.d/dnode
+mkdir /dev/.udev
+udevd --daemon
+udevadm trigger
 
 # original firmware init code substitution from /etc/init.d/rcS
 mount -t ramfs  /dev/mem  /var/
@@ -64,8 +63,9 @@ mkdir -p /var/tmp
 # skipped net
 mkdir -p /mnt/mtd/Config /mnt/mtd/Log /mnt/mtd/Config/ppp /mnt/mtd/Config/Json
 ulimit -s 4096
+/sbin/ifconfig eth0 hw ether `sed -n "s/ethaddr:\(.*\).*/\1\n/p" /proc/xm/xminfo`
 /usr/etc/loadmod
-# dvrHelper /lib/modules /usr/bin/Sofia 127.0.0.1 9578 1 &
+dvrHelper /lib/modules /usr/bin/Sofia 127.0.0.1 9578 1
 EOF
 ```
 
