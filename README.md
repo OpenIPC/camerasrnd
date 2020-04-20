@@ -9,6 +9,10 @@ PRs with additional information and corrections are welcome.
 [Russian FAQ](doc/FAQ.md). We need help to translate it to English (and I hope
 to several popular languages too).
 
+## Usage
+
+[YouTube streaming](streaming/youtube.md)
+
 ## Books for newbies
 
 [Chris Simmonds - Mastering Embedded Linux Programming](https://books.google.com/books?id=4Hc5DwAAQBAJ&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=onepage&q&f=false)
