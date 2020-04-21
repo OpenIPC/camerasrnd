@@ -9,7 +9,7 @@ PRs with additional information and corrections are welcome.
 [Russian FAQ](doc/FAQ.md). We need help to translate it to English (and I hope
 to several popular languages too).
 
-## Usage
+## Sophisticated usage
 
 [YouTube streaming](streaming/youtube.md)
 
