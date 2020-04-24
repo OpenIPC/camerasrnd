@@ -22,6 +22,10 @@
 
 - [Делаю killall Sofia, через некоторое время камера уходит в reboot](#watchdog)
 
+### Софт
+
+- [Как измерить температуру чипа](#temperature)
+
 ### Железо
 
 - [Как коннектор на плате Hi35 называется?](#jst)
@@ -167,6 +171,28 @@ setenv serverip 192.168.1.254; sf probe 0; sf lock 0; run dc; run dr; run du; ru
 ```
 
 Еще один источник прошивок https://www.cctvsp.ru/articles/obnovlenie-proshivok-dlya-ip-kamer-ot-xiong-mai
+
+## Как измерить температуру чипа <a name="temperature"></a>
+
+`Hi3516CV200 / Hi3518EV200 / Hi3518EV201`
+```sh
+devmem 0x20270110 32 0x60FA0000 ; devmem 0x20270114 8  | awk '{print "CPU temperature: " ((($1)*180)/256)-40}'
+```
+
+`Hi3516CV300 / Hi3518EV100`
+```sh
+devmem 0x1203009C 32 0x60FA0000 ; devmem 0x120300A4 16 | awk '{print "CPU temperature: " (((($1)-125.0)/806)*165)-40}'
+```
+
+`Hi3516EV200 / Hi3516EV300:`
+```sh
+devmem 0x120280B4 32 0xC3200000 ; devmem 0x120280BC 16 | awk '{print "CPU temperature: " (((($1)-117)/798)*165)-40}'
+```
+
+`Hi3536C / Hi3536D`
+```sh
+himm 0x0120E0110 0x60320000 > /dev/null; himm 0x120E0118 | awk '{print $4}' | dd skip=1 bs=7 2>/dev/null | awk '{print "0x"$1}' | awk '{print "CPU temperature: " (($1*180)/256)-40}'
+```
 
 ## Как коннектор на плате Hi35 называется? <a name="jst"></a>
 
