@@ -1,11 +1,13 @@
 # How to cross-compile packages
 
-* [Elfutils](elfutils.md)
+* [elfutils](elfutils.md)
 
-* [Gettext](gettext.md)
-
-* [OpenSSL](openssl.md)
+* [gettext](gettext.md)
 
 * [libargp](libargp.md)
+
+* [micropython](micropython.md)
+
+* [OpenSSL](openssl.md)
 
 * [ZLib](zlib.md)

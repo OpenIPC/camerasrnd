@@ -13,9 +13,19 @@ to several popular languages too).
 
 [YouTube streaming](streaming/youtube.md)
 
-## Books for newbies
+## Articles/books for newbies
 
-[Chris Simmonds - Mastering Embedded Linux Programming](https://books.google.com/books?id=4Hc5DwAAQBAJ&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=onepage&q&f=false)
+- [George Hilliard - Mastering Embedded Linux, series of articles](https://www.thirtythreeforty.net/posts/2019/08/mastering-embedded-linux-part-1-concepts/)
+
+- [Chris Simmonds - Mastering Embedded Linux Programming](https://books.google.com/books?id=4Hc5DwAAQBAJ&printsec=frontcover&source=gbs_ge_summary_r&cad=0#v=onepage&q&f=false)
+
+- [Bootlin Linux Kernel training materials](https://bootlin.com/doc/training/linux-kernel/linux-kernel-slides.pdf)
+
+- [A book-in-progress about the linux kernel and its insides](https://0xax.gitbooks.io/linux-insides/content/index.html)
+
+- [Alberto Liberal de los Ríos - Linux Driver Development for Embedded Processors - Second Edition](https://www.amazon.com/Linux-Driver-Development-Embedded-Processors-ebook/dp/B07L512BHG/)
+
+- [Introducing ARM assembly language](http://www.toves.org/books/arm/)
 
 ## Telegram groups
 
