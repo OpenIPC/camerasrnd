@@ -163,7 +163,7 @@ https://zftlab.org/pages/2018020100.html
 ```
 mount -t nfs -o nolock serverip:/srv/nfs
 cd /utils
-MAX=`ls -lr /dev/mtdblock* | head -1 | awk '{print $10}' | sed 's/[^0-9]*//g'`
+MAX=$(ls -1r /dev/mtdblock* | head -n 1 | sed 's/[^0-9]*//g')
 echo -ne >ff.img
 i=0
 while [ "$i" -le "$MAX" ]; do
