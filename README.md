@@ -6,7 +6,7 @@ PRs with additional information and corrections are welcome.
 
 [How to get telnet on camera](get_telnet.md)
 
-[Russian FAQ](doc/FAQ.md). We need help to translate it to English (and I hope
+[Russian FAQ](doc/FAQ-ru.md). We need help to translate it to English (and I hope
 to several popular languages too).
 
 ## Sophisticated usage
