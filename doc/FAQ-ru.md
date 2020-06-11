@@ -24,6 +24,8 @@
 
 - [Делаю killall Sofia, через некоторое время камера уходит в reboot](#watchdog)
 
+- [Как сделать полноразмерный webcapture?](#fullcapture)
+
 ### Софт
 
 - [Как измерить температуру чипа](#temperature)
@@ -103,6 +105,28 @@ Sonia, у XM стал Sofia.
 Ты можешь просто выгрузить модуль watchdoga, например `rmmod xm_watchdog`
 
 (c) Sergey Sharshunov
+
+## Как сделать полноразмерный webcapture? <a name="fullcapture"></a>
+
+```diff
+--- ./orig/HI3516EV300_IPC_85H50AI_LIBXMCAP.json        2020-06-11 16:58:06.446462210 +0300
++++ ./HI3516EV300_IPC_85H50AI_LIBXMCAP.json     2020-06-11 21:45:16.978003244 +0300
+@@ -230,8 +230,8 @@
+                                "VencMode":
+                                [
+                                        {
+-                                               "VpssChn": 2,
+-                                               "EncCapSizeSrcs": ["HD1"],
++                                               "VpssChn": 1,
++                                               "EncCapSizeSrcs": ["720P"],
+                                        }
+                                ]
+                        },
+```
+Теперь с webcapture.jpg отдает картинку 2592х1944, тестировалось на
+EV300+IMX335.
+
+(c) Dmitry Ermakov
 
 ## Что такое крипта?
 
