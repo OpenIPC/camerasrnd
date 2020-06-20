@@ -1,5 +1,7 @@
 # How to cross-compile packages
 
+* [curl](curl.md)
+
 * [elfutils](elfutils.md)
 
 * [gettext](gettext.md)
