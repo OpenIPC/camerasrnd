@@ -184,7 +184,9 @@ https://zftlab.org/pages/2018020100.html
 и тд
 у вас будет энное количество разделов, все сохранить и получите образ всего
 
-```
+Скрипт для получения полного образа flash в одном файле:
+
+```sh
 mount -t nfs -o nolock serverip:/srv/nfs
 cd /utils
 MAX=$(ls -1r /dev/mtdblock* | head -n 1 | sed 's/[^0-9]*//g')
@@ -193,6 +195,22 @@ i=0
 while [ "$i" -le "$MAX" ]; do
     echo "Dump $i part"
     cat /dev/mtdblock$i >> ff.img
+    i=$((i+1))
+done
+sync
+```
+
+То же самое, но сохранить в разные файлы для разных разделов:
+
+```sh
+mount -t nfs -o nolock serverip:/srv/nfs
+cd /utils
+MAX=$(ls -1r /dev/mtdblock* | head -n 1 | sed 's/[^0-9]*//g')
+i=0
+while [ "$i" -le "$MAX" ]; do
+    NAME=`grep mtd$i: /proc/mtd | awk '{gsub(/"/, "", $4); print $4}'`   
+    echo "Dump $NAME"
+    cat /dev/mtdblock$i >> $NAME.img
     i=$((i+1))
 done
 sync
