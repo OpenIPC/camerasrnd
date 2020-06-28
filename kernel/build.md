@@ -186,7 +186,7 @@ It seems you forgot pass proper console command line argument to kernel.
 Try this:
 
 ```
-setenv bootargs console=ttyAMA0,115200 panic=20 <other args>...
+setenv bootargs console=ttyAMA0,115200 earlyprintk panic=20 <other args>...
 ```
 
 ## Deal with original flash image

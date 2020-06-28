@@ -28,7 +28,7 @@ mkdir /utils/tmp
 Goto U-Boot and change params like this:
 
 ```
-setenv bootargs ip=192.168.26.178 root=/dev/nfs nfsroot=192.168.26.219:/srv/cv300 init=/linuxrc mem=\${osmem} console=ttyAMA0,115200 panic=20
+setenv bootargs ip=192.168.26.178 root=/dev/nfs nfsroot=192.168.26.219:/srv/cv300,tcp,v3 init=/linuxrc mem=\${osmem} console=ttyAMA0,115200 panic=20
 ```
 
 If you have error message like this after kernel loads, that your original
