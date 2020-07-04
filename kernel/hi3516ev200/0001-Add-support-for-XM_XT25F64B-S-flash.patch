@@ -1,0 +1,65 @@
+From bb9e9dee8216672fcf711664467ee52c5ee317aa Mon Sep 17 00:00:00 2001
+From: Dmitry Ilyin <dima@doty.ru>
+Date: Sat, 4 Jul 2020 18:01:00 +0300
+Subject: [PATCH] Add support for XM_XT25F64B-S flash
+
+---
+ drivers/mtd/spi-nor/spi-nor.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
+index 638c9ca..f23441e 100644
+--- a/drivers/mtd/spi-nor/spi-nor.c
++++ b/drivers/mtd/spi-nor/spi-nor.c
+@@ -1041,8 +1041,9 @@ static const struct spi_nor_basic_flash_parameter micron_4k_params = {
+ 	.erase_types[1]		= SNOR_OP_ERASE_4K(SPINOR_OP_BE_4K),
+ };
+ 
++
+ static const struct spi_nor_basic_flash_parameter xtx_params = {
+-	.rd_modes		= SNOR_RD_MODES,
++	.rd_modes		= SNOR_EON_RD_MODES,
+ 	.reads[SNOR_MIDX_SLOW]	= SNOR_OP_READ(0, 0, SPINOR_OP_READ),
+ 	.reads[SNOR_MIDX_1_1_1]	= SNOR_OP_READ(0, 8, SPINOR_OP_READ_FAST),
+ 	.reads[SNOR_MIDX_1_1_2]	= SNOR_OP_READ(0, 8, SPINOR_OP_READ_1_1_2),
+@@ -1050,7 +1051,7 @@ static const struct spi_nor_basic_flash_parameter xtx_params = {
+ 	.reads[SNOR_MIDX_1_1_4]	= SNOR_OP_READ(0, 8, SPINOR_OP_READ_1_1_4),
+ 	.reads[SNOR_MIDX_1_4_4]	= SNOR_OP_READ(0, 24, SPINOR_OP_READ_1_4_4),
+ 
+-	.wr_modes		= SNOR_WR_MODES,
++	.wr_modes		= SNOR_EON_WR_MODES,
+ 	.page_programs[SNOR_MIDX_1_1_1]	= SPINOR_OP_PP,
+ 	.page_programs[SNOR_MIDX_1_1_4]	= SPINOR_OP_PP_1_1_4,
+ 
+@@ -2046,6 +2047,7 @@ static void hisi_get_spi_lock_info(struct spi_nor *nor, const struct flash_info
+ 		nor->level = hisi_bp_to_level(nor, info, BP_NUM_3);
+ 		break;
+ 	case SNOR_MFR_WINBOND:
++	case SNOR_MFR_XTX:
+ 		/* BP bit convert to lock level */
+ 		if (chipsize <= _16M)
+ 			nor->level = hisi_bp_to_level(nor, info, BP_NUM_3);
+@@ -2442,8 +2444,10 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
+ 		/* If we were instantiated by DT, use it */
+ 		if (of_property_read_bool(np, "m25p,fast-read"))
+ 			modes->rd_modes |= SNOR_MODE_1_1_1;
+-		else
++		else {
++			printk("@spi_nor_scan(), no \"m25p,fast-read\".\n");
+ 			modes->rd_modes &= ~SNOR_MODE_1_1_1;
++		}
+ 	} else {
+ 		/* If we weren't instantiated by DT, default to fast-read */
+ 		modes->rd_modes |= SNOR_MODE_1_1_1;
+@@ -2453,6 +2457,8 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
+ 	if (info->flags & SPI_NOR_NO_FR)
+ 		modes->rd_modes &= ~SNOR_MODE_1_1_1;
+ 
++	printk("@spi_nor_scan(), modes->rd_modes:0x%x.\n", modes->rd_modes);
++
+ 	nor->program_opcode = SPINOR_OP_PP;
+ 
+ 	/*
+-- 
+2.27.0
+
