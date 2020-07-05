@@ -4,7 +4,7 @@
 
 [Original documentation](http://www.denx.de/wiki/view/DULG/U-Boot)
 
-## Access to U-Boot
+## Access to U-Boot console
 
 Make sure that `F - Hardware Flow Control : No  ` in `Serial port setup` in
 `cOnfigure Minicom` if you use `Minicom`
@@ -24,9 +24,9 @@ switch in the middle leads data transfers which never ends.
 ![](images/12attempts.png/?raw=true)
 ![](images/34attempts.png/?raw=true)
 
-The root cause is described [in unaccepted
-path](https://patchwork.ozlabs.org/patch/167085/). It turns out that in CV300
-U-Boot has `CONFIG_SYS_HZ == 195312` that breaks timeouts in network stack.
+The root cause is described [in an unaccepted
+patch](https://patchwork.ozlabs.org/patch/167085/). It turns out that in CV300
+U-Boot has `CONFIG_SYS_HZ == 195312` that breaks timeouts in the network stack.
 
 Use
 [patch](https://github.com/mrchapp/arago-da830/blob/master/recipes/u-boot/u-boot-omap3-psp/omap3evm/2.1.0.4/0006-Fix-for-timeout-issues-on-U-Boot.patch)
@@ -43,3 +43,25 @@ This happens due to hardware issue, when producer doesn't use all lines between
 flash IC and controller and it needs to be set in `Dual` mode rather than `Quad`.
 Apply [patch](https://github.com/dimerr/stuff/blob/master/0001-uboot_xm_ev200_ev300.patch)
 before U-Boot compilation to fix it.
+
+## CI tests against builded U-boot
+
+I use small `build.sh` script which make build, reboots both USB UART adapter and IPC
+itself, then upload fresh U-boot using `burn` tool via UART:
+
+```sh
+set -e
+
+sudo usbreset /dev/bus/usb/005/007
+
+make ARCH=arm CROSS_COMPILE=arm-hisiv500-linux- -j8
+./mkboot.sh reg_info_hi3516cv300.bin u-boot-ok.bin
+cp u-boot-ok.bin ~/git/burn
+
+cd ~/git/burn
+./restart_eth8.sh
+./hi35xx-tool --chip hi3516cv300 --file=u-boot-ok.bin
+screen /dev/ttyUSB0 115200
+```
+
+Sample workflow [is shown here](https://asciinema.org/a/felzD9YIwcD13lBewCaQe3XjK)
