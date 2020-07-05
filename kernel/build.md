@@ -4,6 +4,8 @@
 
 ### How to build kernel from source and apply patch from SDK
 
+#### CV300
+
 Navigate to `osdrv/opensource/kernel` directory of SDK and check in
 `readme_en.txt` which proper vanilla kernel you will need to download from
 `kernel.org`.
@@ -36,6 +38,21 @@ Data Size:    2992152 Bytes = 2922.02 KiB = 2.85 MiB
 Load Address: 80008000
 Entry Point:  80008000
   Image arch/arm/boot/uImage is ready
+```
+
+#### EV200
+
+```
+wget -qO- \
+    https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.9.37.tar.xz \
+    | tar xvfJ -
+cd linux-4.9.37
+patch -p1 < ../linux-4.9.37.patch
+patch -p1 < ../0001-Add-support-for-XM_XT25F64B-S-flash.patch
+ls -l arch/arm/configs/ | grep hi   # check all options
+cp arch/arm/configs/hi3516ev200_full_defconfig .config
+make ARCH=arm CROSS_COMPILE=arm-himix100-linux- \
+    -j$(nproc) uImage
 ```
 
 ### Test compiled kernel image

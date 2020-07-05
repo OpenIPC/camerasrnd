@@ -294,6 +294,13 @@ cat /proc/umap/vpss
 cat /proc/umap/venc
 ```
 
+Если хочется реалтаймовые логи:
+
+```
+echo "all=9" > /proc/umap/logmpp
+cat /dev/logmpp
+```
+
 ## Как примонтировать образ jffs2 системы на машине разработки?
 
 ```
