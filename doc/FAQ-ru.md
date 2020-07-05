@@ -290,8 +290,13 @@ rm -rf /mnt/mtd/*
 echo "all=5" > /proc/umap/logmpp # более детальный лог
 
 cat /dev/logmpp
+cat /proc/umap/sys
+cat /proc/umap/vi
 cat /proc/umap/vpss
 cat /proc/umap/venc
+cat /proc/umap/logmpp
+cat /proc/umap/isp
+cat /proc/media-mem
 ```
 
 Если хочется реалтаймовые логи:
