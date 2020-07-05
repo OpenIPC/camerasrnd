@@ -24,7 +24,18 @@ switch in the middle leads data transfers which never ends.
 ![](images/12attempts.png/?raw=true)
 ![](images/34attempts.png/?raw=true)
 
+The root cause is described [in unaccepted
+path](https://patchwork.ozlabs.org/patch/167085/). It turns out that in CV300
+U-Boot has `CONFIG_SYS_HZ == 195312` that breaks timeouts in network stack.
 
+Use
+[patch](https://github.com/mrchapp/arago-da830/blob/master/recipes/u-boot/u-boot-omap3-psp/omap3evm/2.1.0.4/0006-Fix-for-timeout-issues-on-U-Boot.patch)
+to make your own changes like:
+
+```diff
+-  NetSetTimeout (TftpTimeoutMSecs, TftpTimeout);
++  NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, TftpTimeout);
+```
 
 ## Rebuilded U-Boot from SDK reads garbage on XM-based IPC EV200/EV300 series
 
