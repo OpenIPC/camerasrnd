@@ -306,6 +306,10 @@ echo "all=9" > /proc/umap/logmpp
 cat /dev/logmpp
 ```
 
+За подробным описанием данных в этих файлах обратитесь к разделу `12 Proc
+Debugging Information` из `HiMPP IPC V3.0 Media Processing Software Development
+Reference`.
+
 ## Как примонтировать образ jffs2 системы на машине разработки?
 
 ```

@@ -33,3 +33,13 @@ Make sure that you're using kernel `3.18` version or upper
     -o lowerdir=/mnt/custom,upperdir=/tmp/upper,workdir=/tmp/work /mnt/custom
 # touch /mnt/custom/test
 ```
+
+## Overlay rootfs on boot
+
+Good
+[example](https://mark4h.blogspot.com/2018/04/hi3518-camera-module-part-5-filesystem.html)
+showed common case of setting up both main and additional overlay system with
+bootparams like this:
+
+`mem=42M console=ttyAMA0,115200 root=/dev/mtdblock2 rootfstype=cramfs mtdparts=hi_sfc:256K(boot),1472K(uImage),5760K(rootfs),512K(overlay) overlay=/dev/mtdblock3 overlayfstype=jffs2 init=/init`
+
