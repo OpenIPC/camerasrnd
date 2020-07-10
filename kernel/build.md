@@ -233,13 +233,28 @@ sync
 
 ### How to mount original flash volumes with custom built kernel
 
-Make sure that you have
+Find and change:
+
+```
+# CONFIG_SQUASHFS is not set
+```
+
+to next block:
 
 ```
 CONFIG_SQUASHFS=y
-CONFIG_SQUASHFS_ZLIB=n
-CONFIG_SQUASHFS_LZO=n
+CONFIG_SQUASHFS_FILE_CACHE=y
+# CONFIG_SQUASHFS_FILE_DIRECT is not set
+CONFIG_SQUASHFS_DECOMP_SINGLE=y
+# CONFIG_SQUASHFS_DECOMP_MULTI is not set
+# CONFIG_SQUASHFS_DECOMP_MULTI_PERCPU is not set
+# CONFIG_SQUASHFS_XATTR is not set
+# CONFIG_SQUASHFS_ZLIB is not set
+# CONFIG_SQUASHFS_LZO is not set
 CONFIG_SQUASHFS_XZ=y
+# CONFIG_SQUASHFS_4K_DEVBLK_SIZE is not set
+# CONFIG_SQUASHFS_EMBEDDED is not set
+CONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE=3
 ```
 
 kernel parameters enabled. Otherwise you will get messages like this:
