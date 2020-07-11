@@ -1,0 +1,239 @@
+diff --git a/net/bootp.c b/net/bootp.c
+index e679f8b..b57d2ff 100644
+--- a/net/bootp.c
++++ b/net/bootp.c
+@@ -20,7 +20,7 @@
+ 
+ #define BOOTP_VENDOR_MAGIC	0x63825363	/* RFC1048 Magic Cookie		*/
+ 
+-#define TIMEOUT		5000UL	/* Milliseconds before trying BOOTP again */
++#define TIMEOUT		5UL	/* Seconds before trying BOOTP again */
+ #ifndef CONFIG_NET_RETRY_COUNT
+ # define TIMEOUT_COUNT	5		/* # of timeouts before giving up  */
+ #else
+@@ -345,7 +345,7 @@ BootpTimeout(void)
+ 		puts ("\nRetry count exceeded; starting again\n");
+ 		NetStartAgain ();
+ 	} else {
+-		NetSetTimeout (TIMEOUT, BootpTimeout);
++		NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, BootpTimeout);
+ 		BootpRequest ();
+ 	}
+ }
+@@ -631,7 +631,7 @@ BootpRequest (void)
+ 	bp->bp_htype = HWT_ETHER;
+ 	bp->bp_hlen = HWL_ETHER;
+ 	bp->bp_hops = 0;
+-	bp->bp_secs = htons(get_timer(0) / 1000);
++	bp->bp_secs = htons(get_timer(0) / CONFIG_SYS_HZ);
+ 	NetWriteIP(&bp->bp_ciaddr, 0);
+ 	NetWriteIP(&bp->bp_yiaddr, 0);
+ 	NetWriteIP(&bp->bp_siaddr, 0);
+@@ -665,7 +665,7 @@ BootpRequest (void)
+ 	pktlen = ((int)(pkt-NetTxPacket)) + BOOTP_HDR_SIZE - sizeof(bp->bp_vend) + ext_len;
+ 	iplen = BOOTP_HDR_SIZE - sizeof(bp->bp_vend) + ext_len;
+ 	NetSetIP(iphdr, 0xFFFFFFFFL, PORT_BOOTPS, PORT_BOOTPC, iplen);
+-	NetSetTimeout(SELECT_TIMEOUT, BootpTimeout);
++	NetSetTimeout(SELECT_TIMEOUT * CONFIG_SYS_HZ, BootpTimeout);
+ 
+ #if defined(CONFIG_CMD_DHCP)
+ 	dhcp_state = SELECTING;
+@@ -888,7 +888,7 @@ DhcpHandler(uchar * pkt, unsigned dest, unsigned src, unsigned len)
+ 			if (NetReadLong((ulong*)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
+ 				DhcpOptionsProcess((u8 *)&bp->bp_vend[4], bp);
+ 
+-			NetSetTimeout(TIMEOUT, BootpTimeout);
++			NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, BootpTimeout);
+ 			DhcpSendRequestPkt(bp);
+ #ifdef CONFIG_SYS_BOOTFILE_PREFIX
+ 		}
+diff --git a/net/net.c b/net/net.c
+index eabf69b..8f970f8 100644
+--- a/net/net.c
++++ b/net/net.c
+@@ -260,7 +260,7 @@ void ArpTimeoutCheck(void)
+ 	t = get_timer(0);
+ 
+ 	/* check for arp timeout */
+-	if ((t - NetArpWaitTimerStart) > ARP_TIMEOUT) {
++	if ((t - NetArpWaitTimerStart) > ARP_TIMEOUT * CONFIG_SYS_HZ/10) {
+ 		NetArpWaitTry++;
+ 
+ 		if (NetArpWaitTry >= ARP_TIMEOUT_COUNT) {
+@@ -584,7 +584,7 @@ void NetStartAgain (void)
+ 	NetTryCount++;
+ 
+ #ifndef CONFIG_NET_MULTI
+-	NetSetTimeout (10000UL, startAgainTimeout);
++	NetSetTimeout(10UL * CONFIG_SYS_HZ, startAgainTimeout);
+ 	NetSetHandler (startAgainHandler);
+ #else	/* !CONFIG_NET_MULTI*/
+ 	eth_halt ();
+@@ -595,7 +595,7 @@ void NetStartAgain (void)
+ 	if (NetRestartWrap) {
+ 		NetRestartWrap = 0;
+ 		if (NetDevExists) {
+-			NetSetTimeout (10000UL, startAgainTimeout);
++			NetSetTimeout(10UL * CONFIG_SYS_HZ, startAgainTimeout);
+ 			NetSetHandler (startAgainHandler);
+ 		} else {
+ 			NetState = NETLOOP_FAIL;
+@@ -794,7 +794,7 @@ static void PingStart(void)
+ #if defined(CONFIG_NET_MULTI)
+ 	printf ("Using %s device\n", eth_get_name());
+ #endif	/* CONFIG_NET_MULTI */
+-	NetSetTimeout (10000000UL, PingTimeout);/*FIXME*/
++	NetSetTimeout(10UL * CONFIG_SYS_HZ, PingTimeout);
+ 	NetSetHandler (PingHandler);
+ 
+ 	PingSend();
+@@ -817,7 +817,7 @@ static void PingStart(void)
+ #define CDP_SYSOBJECT_TLV		0x0015
+ #define CDP_MANAGEMENT_ADDRESS_TLV	0x0016
+ 
+-#define CDP_TIMEOUT			250UL	/* one packet every 250ms */
++#define CDP_TIMEOUT			(CONFIG_SYS_HZ/4)  /* one packet every 250ms */
+ 
+ static int CDPSeq;
+ static int CDPOK;
+diff --git a/net/nfs.c b/net/nfs.c
+index d11bb4c..016b0cb 100644
+--- a/net/nfs.c
++++ b/net/nfs.c
+@@ -31,7 +31,7 @@
+ 
+ #define HASHES_PER_LINE 65	/* Number of "loading" hashes per line	*/
+ #define NFS_RETRY_COUNT 30
+-#define NFS_TIMEOUT 2000UL
++#define NFS_TIMEOUT 2UL		/* Seconds */
+ 
+ static int fs_mounted = 0;
+ static unsigned long rpc_id = 0;
+@@ -574,7 +574,7 @@ NfsTimeout (void)
+ 		NetStartAgain ();
+ 	} else {
+ 		puts("T ");
+-		NetSetTimeout (NFS_TIMEOUT, NfsTimeout);
++		NetSetTimeout(NFS_TIMEOUT * CONFIG_SYS_HZ, NfsTimeout);
+ 		NfsSend ();
+ 	}
+ }
+@@ -653,7 +653,7 @@ NfsHandler (uchar *pkt, unsigned dest, unsigned src, unsigned len)
+ 
+ 	case STATE_READ_REQ:
+ 		rlen = nfs_read_reply (pkt, len);
+-		NetSetTimeout (NFS_TIMEOUT, NfsTimeout);
++		NetSetTimeout(NFS_TIMEOUT * CONFIG_SYS_HZ, NfsTimeout);
+ 		if (rlen > 0) {
+ 			nfs_offset += rlen;
+ 			NfsSend ();
+diff --git a/net/rarp.c b/net/rarp.c
+index 9444c03..e4ff270 100644
+--- a/net/rarp.c
++++ b/net/rarp.c
+@@ -29,7 +29,7 @@
+ #include "rarp.h"
+ #include "tftp.h"
+ 
+-#define TIMEOUT		5000UL	/* Milliseconds before trying BOOTP again */
++#define TIMEOUT		5L	/* Seconds before trying BOOTP again */
+ #ifndef	CONFIG_NET_RETRY_COUNT
+ # define TIMEOUT_COUNT	5		/* # of timeouts before giving up  */
+ #else
+@@ -76,7 +76,7 @@ RarpTimeout(void)
+ 		puts ("\nRetry count exceeded; starting again\n");
+ 		NetStartAgain ();
+ 	} else {
+-		NetSetTimeout (TIMEOUT, RarpTimeout);
++		NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, RarpTimeout);
+ 		RarpRequest ();
+ 	}
+ }
+@@ -111,6 +111,6 @@ RarpRequest (void)
+ 
+ 	NetSendPacket(NetTxPacket, (pkt - NetTxPacket) + ARP_HDR_SIZE);
+ 
+-	NetSetTimeout(TIMEOUT, RarpTimeout);
++	NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, RarpTimeout);
+ 	NetSetHandler(RarpHandler);
+ }
+diff --git a/net/sntp.c b/net/sntp.c
+index 76c10ec..2438fb6 100644
+--- a/net/sntp.c
++++ b/net/sntp.c
+@@ -12,7 +12,7 @@
+ 
+ #include "sntp.h"
+ 
+-#define SNTP_TIMEOUT 10000UL
++#define SNTP_TIMEOUT 10UL	/* Seconds */
+ 
+ static int SntpOurPort;
+ 
+@@ -80,7 +80,7 @@ SntpStart (void)
+ {
+ 	debug("%s\n", __func__);
+ 
+-	NetSetTimeout (SNTP_TIMEOUT, SntpTimeout);
++	NetSetTimeout(SNTP_TIMEOUT * CONFIG_SYS_HZ, SntpTimeout);
+ 	NetSetHandler(SntpHandler);
+ 	memset (NetServerEther, 0, 6);
+ 
+diff --git a/net/tftp.c b/net/tftp.c
+index bc5a44b..35107e0 100644
+--- a/net/tftp.c
++++ b/net/tftp.c
+@@ -11,7 +11,7 @@
+ #include "bootp.h"
+ 
+ #define WELL_KNOWN_PORT	69		/* Well known TFTP port #		*/
+-#define TIMEOUT	 	1000		/* Seconds to timeout for a lost pkt	*/
++#define TIMEOUT	 	1UL		/* Seconds to timeout for a lost pkt	*/
+ #ifndef	CONFIG_NET_RETRY_COUNT
+ # define TIMEOUT_COUNT	10		/* # of timeouts before giving up  */
+ #else
+@@ -35,7 +35,7 @@
+ #define STATE_WRQ	6
+ #define STATE_ACK	7
+ 
+-static ulong TftpTimeoutMSecs = TIMEOUT;
++static ulong TftpTimeoutMSecs = TIMEOUT * 1000;
+ static int TftpTimeoutCountMax = TIMEOUT_COUNT;
+ 
+ /*
+@@ -383,7 +383,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
+ 			tftp_show_transferd(TftpBlock, TftpBlockWrapOffset);
+ 		}
+ 		TftpLastBlock = TftpBlock;
+-		NetSetTimeout (TftpTimeoutMSecs * CFG_HZ, TftpTimeout);
++		NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, TftpTimeout);
+ 
+ 		if((TftpBlockWrapOffset + TftpBlkSize*TftpBlock) > upload_size )
+ 		{
+@@ -511,7 +511,7 @@ TftpHandler (uchar * pkt, unsigned dest, unsigned src, unsigned len)
+ 
+ 		TftpLastBlock = TftpBlock;
+ 		TftpTimeoutCountMax = TIMEOUT_COUNT;
+-		NetSetTimeout (TftpTimeoutMSecs * CFG_HZ, TftpTimeout);
++		NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, TftpTimeout);
+ 
+ 		store_block (TftpBlock - 1, pkt + 2, len);
+ 
+@@ -613,7 +613,7 @@ TftpTimeout (void)
+ 		NetStartAgain ();
+ 	} else {
+ 		puts ("T ");
+-		NetSetTimeout (TftpTimeoutMSecs * CFG_HZ, TftpTimeout);
++		NetSetTimeout(TIMEOUT * CONFIG_SYS_HZ, TftpTimeout);
+ 		TftpSend ();
+ 	}
+ }
+@@ -729,7 +729,7 @@ TftpStart (void)
+ 	}
+ 	TftpTimeoutCountMax = TftpRRQTimeoutCountMax;
+ 
+-	NetSetTimeout (TftpTimeoutMSecs * CFG_HZ, TftpTimeout);
++	NetSetTimeout (TftpTimeoutMSecs * CONFIG_SYS_HZ / 1000, TftpTimeout);
+ 	NetSetHandler (TftpHandler);
+ 
+ 	TftpServerPort = WELL_KNOWN_PORT;
