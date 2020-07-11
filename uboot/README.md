@@ -25,17 +25,20 @@ Use `readme_en.txt` from SDK directory `osdrv` for reference.
 tar xvf u-boot-2010.06.tgz
 cd u-boot-2010.06
 # Find and copy mkboot.sh script
-cp ../../../tools/pc/uboot_tools/mkboot.sh .
-# Find and copy reg-init-table for CV300
-cp $SOURCE_DIR/reg_info_hi3516cv300.bin .
+#???cp ../../../tools/pc/uboot_tools/mkboot.sh .
+# Copy reg-init-table for CV300
+wget https://github.com/OpenIPC/camerasrnd/raw/master/uboot/reg_info/reg_info_hi3516cv300.bin \
+    -O hi3516cv300.reg
 # Apply fix for network issue
+wget https://raw.githubusercontent.com/OpenIPC/camerasrnd/master/uboot/CV300-Fix-network-broken-transfers.patch
 patch -p1 < CV300-Fix-network-broken-transfers.patch
 # Compilation phase
 make ARCH=arm CROSS_COMPILE=arm-hisiv500-linux- hi3516cv300_config
 make ARCH=arm CROSS_COMPILE=arm-hisiv500-linux-
-# The generated u-boot.bin is copied to osdrv/tools/pc/uboot_tools/directory
-./mkboot.sh reg_info_hi3516cv300.bin u-boot-ok.bin
-# The generated u-boot-ok.bin is available for u-boot image
+# Make compressed U-Boot image
+cp u-boot.bin full-boot.bin
+make CPU=hi3516cv300 ARCH=arm CROSS_COMPILE=arm-hisiv500-linux- mini-boot.bin
+# The generated mini-boot.bin is available for u-boot image
 ```
 
 ## Known issues
@@ -78,13 +81,14 @@ set -e
 sudo usbreset /dev/bus/usb/005/007
 
 make ARCH=arm CROSS_COMPILE=arm-hisiv500-linux- -j$(nproc)
-./mkboot.sh reg_info_hi3516cv300.bin u-boot-ok.bin
-cp u-boot-ok.bin ~/git/burn
+cp u-boot.bin full-boot.bin
+make CPU=hi3516cv300 ARCH=arm CROSS_COMPILE=arm-hisiv500-linux- mini-boot.bin
 
+cp mini-boot.bin ~/git/burn
 cd ~/git/burn
 # Custom script to power reset camera via network switch
 ./restart_eth8.sh
-./hi35xx-tool --chip hi3516cv300 --file=u-boot-ok.bin
+./hi35xx-tool --chip hi3516cv300 --file=mini-boot.bin
 screen /dev/ttyUSB0 115200
 ```
 
