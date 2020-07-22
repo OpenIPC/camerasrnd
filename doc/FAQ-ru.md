@@ -241,7 +241,7 @@ devmem 0x20270110 32 0x60FA0000 ; devmem 0x20270114 8  | awk '{print "CPU temper
 devmem 0x1203009C 32 0x60FA0000 ; devmem 0x120300A4 16 | awk '{print "CPU temperature: " (((($1)-125.0)/806)*165)-40}'
 ```
 
-`Hi3516EV200 / Hi3516EV300:`
+`Hi3516EV200 / Hi3516EV300`
 ```sh
 devmem 0x120280B4 32 0xC3200000 ; devmem 0x120280BC 16 | awk '{print "CPU temperature: " (((($1)-117)/798)*165)-40}'
 ```
@@ -249,6 +249,26 @@ devmem 0x120280B4 32 0xC3200000 ; devmem 0x120280BC 16 | awk '{print "CPU temper
 `Hi3536C / Hi3536D`
 ```sh
 himm 0x0120E0110 0x60320000 > /dev/null; himm 0x120E0118 | awk '{print $4}' | dd skip=1 bs=7 2>/dev/null | awk '{print "0x"$1}' | awk '{print "CPU temperature: " (($1*180)/256)-40}'
+```
+
+`Hi3516AV200`
+```sh
+#PERI_PMC68 0x120a0110 (disable-->enable)
+himm 0x120a0110 0 > /dev/null;
+himm 0x120a0110 0x40000000 > /dev/null;
+
+usleep 100000
+#PERI_PMC70 0x120a0118 read temperature
+DATA0=$(himm 0x120a0118 0 | grep 0x120a0118)
+DATA1=$(printf "$DATA0" | sed 's/0x120a0118: //')
+DATA2=$(printf "$DATA1" | sed 's/ --> 0x00000000//')
+
+let "var=$DATA2&0x3ff"
+if [ $var -ge 125 -a $var -le 931 ];then
+    echo `awk -v x="$var" 'BEGIN{printf "chip temperature: %f\n",(x-125)*10000/806*165/10000-40}'`
+else
+    echo "$var ---> invalid. [125,931]"
+fi
 ```
 
 ## Подскажите тип разъемов на плате для подключения кабелей? <a name="jack"></a>
