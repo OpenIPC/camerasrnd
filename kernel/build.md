@@ -206,6 +206,28 @@ Try this:
 setenv bootargs console=ttyAMA0,115200 earlyprintk panic=20 <other args>...
 ```
 
+### System crashes while loading application which linked with SDK
+
+It turns out that at least in CV300 kernel next configuration options are
+crucial:
+
+```diff
+-# CONFIG_CGROUPS is not set
++CONFIG_CGROUPS=y
++# CONFIG_CGROUP_DEBUG is not set
++# CONFIG_CGROUP_FREEZER is not set
++# CONFIG_CGROUP_DEVICE is not set
++# CONFIG_CPUSETS is not set
++# CONFIG_CGROUP_CPUACCT is not set
++# CONFIG_RESOURCE_COUNTERS is not set
++CONFIG_CGROUP_SCHED=y
++CONFIG_FAIR_GROUP_SCHED=y
++# CONFIG_CFS_BANDWIDTH is not set
++# CONFIG_RT_GROUP_SCHED is not set
++# CONFIG_BLK_CGROUP is not set
+ # CONFIG_CHECKPOINT_RESTORE is not set
+```
+
 ## Deal with original flash image
 
 ### How to backup full flash image without loading to U-Boot
