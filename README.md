@@ -91,6 +91,8 @@ Flash
 
 ## SDKs
 
+### HiSilicon
+
 | Family      | Kernel  | U-Boot            | MPP    |
 | ----------- | ------- | ----------------- | ------ |
 | hi3516av100 | 3.4.35  |                   | v2     |
@@ -145,6 +147,12 @@ Each field is explained as follows:
 
     `xx0` indicates normal version, for temporary versions last character could
     be incremented by 1 in range from `1-9` and `A-z`.
+
+### XiongmaiTech
+
+* [NetSDK](https://obs-xm-pub.obs.cn-south-1.myhuaweicloud.com/openPlat/20200227/NetSDK_20200227.zip)
+
+* [NetSDK client example](https://github.com/dimerr/xmconfigtool)
 
 [SDK archive](https://dl.openipc.org/SDK/) of OpenIPC project.
 
