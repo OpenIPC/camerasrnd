@@ -9,7 +9,7 @@ http://www.allwinnertech.com/
 
 * Allwinner V3
 * Allwinner V3s
-* Allwinner V5 - по чипу много есть для начала разработки в открытых источниках (@Gatchenko)
+* Allwinner V5 - there is a lot of information on the chip for starting development in open sources (@Gatchenko)
 * Allwinner V40
 * Allwinner V66
 * Allwinner V316
