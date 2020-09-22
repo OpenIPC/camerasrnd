@@ -7,6 +7,8 @@
 
 http://www.allwinnertech.com/
 
+https://github.com/linux-sunxi
+
 * Allwinner V3
 * Allwinner V3s
 * Allwinner V5 - there is a lot of information on the chip for starting development in open sources (@Gatchenko)
