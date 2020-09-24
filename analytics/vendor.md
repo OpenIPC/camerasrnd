@@ -11,11 +11,11 @@ https://github.com/linux-sunxi
 
 * Allwinner V3
 * Allwinner V3s
-* Allwinner V5 - there is a lot of information on the chip for starting development in open sources (@Gatchenko)
+* Allwinner V5 - http://files.lindeni.org/lindenis-v5/ there is a lot of information on the chip for starting development in open sources (@Gatchenko) 
 * Allwinner V40
 * Allwinner V66
 * Allwinner V316
-* Allwinner V536
+* Allwinner V536 - http://files.lindeni.org/lindenis-v536/
 
 
 ## Ambarela
