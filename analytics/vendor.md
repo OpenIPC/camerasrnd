@@ -82,7 +82,10 @@ http://www.sigmastarsemi.com/en/index.aspx
 
 http://linux-chenxing.org/
 https://github.com/roleoroleo/yi-hack-MStar
+https://github.com/borodiliz/docker-yi-hack
+https://github.com/fifteenhex/linux-chenxing/blob/master/index.md
 
+* SSC335
 * MSC316DM
 * MSC313E
 
