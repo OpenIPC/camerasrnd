@@ -474,3 +474,13 @@ init=linuxrc mem=56M console=ttyAMA0,115200 root=/dev/mtdblock1 rootfstype=squas
 ```
 
 (c) Sergey Sharshunov
+
+Если нет доступа к U-Boot (есть telnet, но нет UART), можно собрать
+`flash_eraseall` из состава SDK `package/board_uclibc` и выполнить очистку
+раздела командой:
+
+```sh
+/utils/flash_erase /dev/mtd5 0 0
+```
+
+, где `/dev/mtd5` - определенный ранее раздел.
