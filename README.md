@@ -2,6 +2,13 @@
 
 PRs with additional information and corrections are welcome.
 
+## Supporting
+
+If you like my work, help me to motivate myself to add new stuff here, please
+consider supporting the project on Patreon. Thanks a lot!
+
+<a href="https://www.patreon.com/widgetii"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Patreon donate button" /> </a>
+
 ## FAQs
 
 [How to get telnet on camera](get_telnet.md)
