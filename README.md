@@ -157,7 +157,13 @@ Each field is explained as follows:
 
 ### XiongmaiTech
 
-* [NetSDK](https://obs-xm-pub.obs.cn-south-1.myhuaweicloud.com/openPlat/20200227/NetSDK_20200227.zip)
+| Platform | Version    | Update time | Download link |
+| -------- | ---------- | ----------- | ------------- |
+| Windows  | V4.0.8.80	| 2020-02-27  | [link](https://obs-xm-pub.obs.cn-south-1.myhuaweicloud.com/openPlat/20200227/NetSDK_20200227.zip) |
+| Mac      |            | 2018-12-17  | [link](https://obs-xm-pub.obs.cn-south-1.myhuaweicloud.com/openPlat/20191221/MAC(20181217).zip) |
+| Linux    | V1.0.2.0	| 2020-01-10  | [link](https://obs-xm-pub.obs.cn-south-1.myhuaweicloud.com/openPlat/20200110/XNetSDK_20200110.zip) |
+
+Latest versions were taken from [official site](https://oppf.xmcsrv.com/#/download?md=netSDK)
 
 * [NetSDK client example](https://github.com/dimerr/xmconfigtool)
 
