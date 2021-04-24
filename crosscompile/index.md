@@ -6,6 +6,8 @@
 
 * [gettext](gettext.md)
 
+* [gdb](gdb.md)
+
 * [libargp](libargp.md)
 
 * [micropython](micropython.md)
