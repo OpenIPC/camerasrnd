@@ -1,6 +1,11 @@
 # How to login inside original firmware
 
-Information applicable only for XM-based camera firmware.
+Information applicable only for XM-based camera (and partially DVR/NVR)
+firmwares.
+
+In recent versions of XM firmwares, telnet is not enabled by default,
+and most of backdoors allowing to easily (remotely) enable it are
+fixed/closed.
 
 ## Enable telnet server
 
@@ -10,6 +15,9 @@ In U-Boot console:
 setenv telnetctrl 1; saveenv
 ```
 
+Note that `saveenv` is mandatory, otherwise Linux side (which analyzes
+this setting) simply won't see it.
+
 ## Connect with telnet
 
 ```
@@ -18,7 +26,10 @@ Password: xmhdipc
 Welcome to HiLinux.
 ```
 
-Also can try [other pairs](https://gist.github.com/gabonator/74cdd6ab4f733ff047356198c781f27d)
+Also can try [other login/passwd pairs](https://gist.github.com/gabonator/74cdd6ab4f733ff047356198c781f27d)
+In recent NVR firmware versions, you may need to login with the actual
+admin password which you set up in the UI (static predefined password
+won't work).
 
 ## Optional: enable Linux kernel verbose boot (where armbenv exists)
 
@@ -33,6 +44,12 @@ Or in case where XmEnv exists:
 # XmEnv -s xmuart 0
 # reboot
 ```
+
+Note that while this setting modifies U-Boot environment, it should be
+done from Linux. At least some vendor U-Boot versions don't allow to
+set this from U-Boot console itself (attempt to set a variable of such
+name is ignored).
+
 ## Enable telnet without even open your camera (remotely)
 
 * Find proper zip with recent firmware update using [link](https://translate.google.com/translate?hl=en&sl=ru&tl=en&u=https%3A%2F%2Fwww.cctvsp.ru%2Farticles%2Fobnovlenie-proshivok-dlya-ip-kamer-ot-xiong-mai) and download it.
