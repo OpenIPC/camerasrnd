@@ -18,7 +18,7 @@ https://github.com/linux-sunxi
 * Allwinner V536 - http://files.lindeni.org/lindenis-v536/
 
 
-## Ambarela
+## Ambarella
 
 http://www.ambarella.com
 
@@ -30,7 +30,7 @@ http://www.ambarella.com
 
 http://www.anyka.com/en/
 
-* ?
+* AK3918EV200
 * ?
 
 
@@ -38,7 +38,7 @@ http://www.anyka.com/en/
 
 https://www.fullhan.com/en/
 
-* ?
+* FH8852
 * ?
 
 
@@ -46,7 +46,7 @@ https://www.fullhan.com/en/
 
 http://www.gokemicro.com/en/index.php?g=home&m=products&a=index&id=9
 
-* GK7102
+* GK7102C / GK7102S
 * GK7101
 
 
