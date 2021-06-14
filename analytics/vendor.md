@@ -89,6 +89,17 @@ https://github.com/fifteenhex/linux-chenxing/blob/master/index.md
 * MSC316DM
 * MSC313E
 
+## Novatek
+https://www.novatek.com.tw/
+#### IPC
+* NT98562
+* NT98566
+
+#### IPC+AI:
+* NT98520
+* NT98525
+* NT98528
+* NT98529
 
 ## TI
 
