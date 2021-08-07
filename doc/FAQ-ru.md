@@ -1,11 +1,11 @@
 # FAQ
 
-Составлен по материалам Telegram каналов `OpenWrt for IPCam + soft` и
-`ModdingIPC HI35xx`
+Составлен по материалам Telegram каналов `OpenIPC software` и
+`OpenIPC modding`
 
 ## Cодержание
 
-### Оригинальная прошивка
+### Оригинальная прошивка камер Xiongmai
 
 - [Как включить Telnet сервер?](#activate_telnet)
 
@@ -100,6 +100,8 @@ Sonia, у XM стал Sofia.
 * https://github.com/alexshpilkin/dvrip
 
 * [github.com/johndoe31415/numenworld-ipcam](https://github.com/johndoe31415/numenworld-ipcam/blob/master/nwipcam)
+
+* [NetSDK для C#](https://github.com/QuantMad/WinNetSDK)
 
 ## Делаю killall Sofia, через некоторое время камера уходит в reboot
 <a name="watchdog"></a>
