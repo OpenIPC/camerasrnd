@@ -47,7 +47,7 @@ Hardware structuring ([courtesy of OpenHisiIpCam project](https://github.com/Ope
 | [hi3518cv200, hi3518ev200, hi3518ev201](https://drive.google.com/file/d/1nv-m7WFhhfAZ6xgynfZQh1ijtwmmf1UX/view) | hi3516cv200 |
 | [hi3516cv300, hi3516ev100](https://drive.google.com/file/d/1xZf-YiYSmB8sn9Lnj3obsR-x4AqDPa4D/view) | hi3516cv300 |
 | hi3516cv500, hi3516dv300, hi3516av300              | hi3516cv500 |
-| [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view), [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300 | hi3516ev200 |
+| [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view), [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300 | hi3516ev300 |
 | hi3519av100                                        | hi3519av100 |
 | hi3559av100                                        | hi3559av100 |
 
