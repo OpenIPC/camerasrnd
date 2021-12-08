@@ -41,18 +41,31 @@ Hardware structuring ([courtesy of OpenHisiIpCam project](https://github.com/Ope
 
 | Chips                                              | shortcode   |
 | -------------------------------------------------- | ----------- |
-| hi3516av100, hi3516dv100                           | hi3516av100 |
+| gk7205v200, gk7605v100, gk7202v300, gk7205v300     | gk7205v300  |
+| hi3516dv100, hi3516av100                           | hi3516av100 |
 | hi3519v101, hi3516av200                            | hi3516av200 |
 | [hi3516cv100, hi3518cv100, hi3518ev100](https://drive.google.com/file/d/1XA5IqVb-mUvmYl_77TMnoNonvNgkq473/view) | hi3516cv100 |
-| [hi3518cv200, hi3518ev200, hi3518ev201](https://drive.google.com/file/d/1nv-m7WFhhfAZ6xgynfZQh1ijtwmmf1UX/view) | hi3516cv200 |
-| [hi3516cv300, hi3516ev100](https://drive.google.com/file/d/1xZf-YiYSmB8sn9Lnj3obsR-x4AqDPa4D/view) | hi3516cv300 |
-| hi3516cv500, hi3516dv300, hi3516av300              | hi3516cv500 |
-| [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view), [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300 | hi3516ev300 |
+| [hi3518cv200, hi3518ev200, hi3518ev201, hi3516cv200](https://drive.google.com/file/d/1nv-m7WFhhfAZ6xgynfZQh1ijtwmmf1UX/view) | hi3516cv200 |
+| [hi3516ev100, hi3516cv300](https://drive.google.com/file/d/1xZf-YiYSmB8sn9Lnj3obsR-x4AqDPa4D/view) | hi3516cv300 |
+| hi3516dv300, hi3516av300, hi3516cv500              | hi3516cv500 |
+| [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300, [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view) | hi3516ev300 |
 | hi3519av100                                        | hi3519av100 |
 | hi3559av100                                        | hi3559av100 |
+| nt98562, nt98566                                   | nt9856x     |
+| ssc337, ssc335                                     | ssc335      |
+| xm550, xm530                                       | xm530       |
+
 
 If you know about newer versions of full datasheets or can share them for different
 camera types don't hesitate to make a PR.
+
+Successors of Hisilicon chips
+| Hisilicon   | Goke       |
+| ----------- | ---------- |
+| hi3516ev200 | gk7205v200 |
+| hi3516dv200 | gk7605v100 |
+| hi3516ev300 | gk7205v300 |
+| hi3518ev300 | gk7202v300 |
 
 ## Performance and sensors
 
