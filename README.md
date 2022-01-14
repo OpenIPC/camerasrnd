@@ -4,10 +4,11 @@ PRs with additional information and corrections are welcome.
 
 ## FAQs
 
-[How to get telnet on camera](get_telnet.md)
+[English FAQ](docs/FAQ-en.md). Thanks to @vbelov42 for translation from Russian.
 
-[Russian FAQ](doc/FAQ-ru.md). We need help to translate it to English (and I hope
-to several popular languages too).
+[Russian FAQ](docs/FAQ-ru.md).
+
+[How to get telnet on camera](get_telnet.md)
 
 ## Sophisticated usage
 
