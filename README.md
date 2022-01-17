@@ -41,7 +41,7 @@ Hardware structuring ([courtesy of OpenHisiIpCam project](https://github.com/Ope
 | [hi3516cv100, hi3518cv100, hi3518ev100, hi3518av100](https://drive.google.com/file/d/1XA5IqVb-mUvmYl_77TMnoNonvNgkq473/view) | hi3516cv100 |
 | [hi3516dv100, hi3516av100](https://drive.google.com/file/d/1hwCMnwQ_nKL-weH3onGZ1njogz0cPKsK/view) | hi3516av100 |
 | [hi3518ev200, hi3518ev201, hi3516cv200](https://drive.google.com/file/d/1nv-m7WFhhfAZ6xgynfZQh1ijtwmmf1UX/view) | hi3516cv200 |
-| [hi3519v101](https://drive.google.com/file/d/1DMpPAnUBnijmC9u08I_D4nYpSZC2f4jx/view), [hi3516av200](https://drive.google.com/file/d/1j_3e2PaDu_j5Jy9f7ptRMN5IOwQft6iI/view) | hi3516av200 |
+| [hi3519v101](https://drive.google.com/file/d/1DMpPAnUBnijmC9u08I_D4nYpSZC2f4jx/view), [hi3516av200](https://drive.google.com/file/d/1j_3e2PaDu_j5Jy9f7ptRMN5IOwQft6iI/view) | hi3519v100 |
 | [hi3516ev100, hi3516cv300](https://drive.google.com/file/d/1xZf-YiYSmB8sn9Lnj3obsR-x4AqDPa4D/view) | hi3516cv300 |
 | hi3516dv300, hi3516av300, hi3516cv500              | hi3516cv500 |
 | [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300, [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view) | hi3516ev300 |
@@ -103,7 +103,7 @@ Flash
 | ----------- | ------- | ----------------- | ------ |
 | hi3516av100 | 3.4.35  |                   | v2     |
 | hi3516av200 | 3.18.20 |                   | v3     |
-| hi3516cv100 | 3.0.8   | 2010.06-svn       | v1/v2? |
+| hi3516cv100 | 3.0.8   | 2010.06-svn       | v1     |
 | hi3516cv200 | 3.4.35  |                   | v2     |
 | hi3516cv300 | 3.18.20 | 2010.06-svn1098   | v3     |
 | hi3516cv500 | 4.9.37  |                   | v4     |
