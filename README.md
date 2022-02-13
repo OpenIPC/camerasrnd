@@ -4,11 +4,13 @@ PRs with additional information and corrections are welcome.
 
 ## Where to begin?
 
-[English FAQ](docs/FAQ-en.md). Thanks to @vbelov42 for translation from Russian.
+[OpenIPC wiki](https://openipc.org/wiki)
 
-[Russian FAQ](docs/FAQ-ru.md).
+[English XM FAQ](docs/XM-FAQ-en.md). Thanks to @vbelov42 for translation from Russian.
 
-[How to get telnet on camera](get_telnet.md)
+[Russian XM FAQ](docs/XM-FAQ-ru.md).
+
+[How to get telnet on XM camera](xm_get_telnet.md)
 
 ## Articles/books for newbies
 
@@ -165,8 +167,6 @@ Each field is explained as follows:
 Latest versions were taken from [official site](https://oppf.xmcsrv.com/#/download?md=netSDK)
 
 * [NetSDK client example](https://github.com/dimerr/xmconfigtool)
-
-[SDK archive](https://dl.openipc.org/SDK/) of OpenIPC project.
 
 ## Sophisticated usage
 
