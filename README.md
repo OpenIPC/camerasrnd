@@ -46,7 +46,7 @@ Hardware structuring ([courtesy of OpenHisiIpCam project](https://github.com/Ope
 | [hi3519v101](https://drive.google.com/file/d/1DMpPAnUBnijmC9u08I_D4nYpSZC2f4jx/view), [hi3516av200](https://drive.google.com/file/d/1j_3e2PaDu_j5Jy9f7ptRMN5IOwQft6iI/view) | hi3519v100 |
 | [hi3516ev100, hi3516cv300](https://drive.google.com/file/d/1xZf-YiYSmB8sn9Lnj3obsR-x4AqDPa4D/view) | hi3516cv300 |
 | hi3516dv300, hi3516av300, hi3516cv500              | hi3516cv500 |
-| [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300, [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view) | hi3516ev300 |
+| [hi3516ev200](https://drive.google.com/file/d/1zGBJ_SIazFqJ8d8bguURVVwIvF4ybFs1/view), hi3516dv200, hi3518ev300, [hi3516ev300](https://drive.google.com/file/d/1vjAQSrFoxioPq7OhL5taIyi2D0D_3WKc/view) | hi3516ev200 |
 | hi3519av100                                        | hi3519av100 |
 | hi3559av100                                        | hi3559av100 |
 | gk7205v200, gk7605v100, gk7202v300, gk7205v300     | gk7205v300(*) |
