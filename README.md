@@ -24,7 +24,7 @@ PRs with additional information and corrections are welcome.
 
 - [Alberto Liberal de los Ríos - Linux Driver Development for Embedded Processors - Second Edition](https://www.amazon.com/Linux-Driver-Development-Embedded-Processors-ebook/dp/B07L512BHG/)
 
-- [Introducing ARM assembly language](http://www.toves.org/books/arm/)
+- [Introducing ARM assembly language](http://www.cburch.com/books/arm/)
 
 ## Telegram groups
 
