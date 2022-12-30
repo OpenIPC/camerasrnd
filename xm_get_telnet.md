@@ -31,7 +31,9 @@ In recent NVR firmware versions, you may need to login with the actual
 admin password which you set up in the UI (static predefined password
 won't work).
 
-## Optional: enable Linux kernel verbose boot (where armbenv exists)
+## Optional: enable Linux kernel verbose boot
+
+if armbenv exists
 
 ```
 # armbenv -s xmuart 0
@@ -48,7 +50,16 @@ Or in case where XmEnv exists:
 Note that while this setting modifies U-Boot environment, it should be
 done from Linux. At least some vendor U-Boot versions don't allow to
 set this from U-Boot console itself (attempt to set a variable of such
-name is ignored).
+name is ignored). But you can try with the -f option from U-Boot.
+
+In U-Boot console:
+
+```
+setenv -f xmuart 0; saveenv
+```
+
+Note that `saveenv` is mandatory, otherwise Linux side (which analyzes
+this setting) simply won't see it.
 
 ## Enable telnet without even open your camera (remotely)
 
