@@ -20,6 +20,17 @@ this setting) simply won't see it.
 
 ## Connect with telnet
 
+In some case, telnetctrl variable does not start telnet automatically and it have to be started manually.
+
+```
+telnetd
+sleep 1
+touch /var/Telnetd_WanCheckFlag
+```
+The creation of the flag file /var/Telnetd_WanCheckFlag allow connection from lan. It has to be created after the starting of telnetd.
+
+Then, to log in, use the following
+
 ```
 LocalHost login: root
 Password: xmhdipc
