@@ -20,6 +20,17 @@ this setting) simply won't see it.
 
 ## Connect with telnet
 
+In some case, telnetctrl variable does not start telnet automatically and it have to be started manually.
+
+```
+telnetd
+sleep 1
+touch /var/Telnetd_WanCheckFlag
+```
+The creation of the flag file /var/Telnetd_WanCheckFlag allow connection from lan. It has to be created after the starting of telnetd.
+
+Then, to log in, use the following
+
 ```
 LocalHost login: root
 Password: xmhdipc
@@ -31,7 +42,9 @@ In recent NVR firmware versions, you may need to login with the actual
 admin password which you set up in the UI (static predefined password
 won't work).
 
-## Optional: enable Linux kernel verbose boot (where armbenv exists)
+## Optional: enable Linux kernel verbose boot
+
+if armbenv exists
 
 ```
 # armbenv -s xmuart 0
@@ -48,7 +61,16 @@ Or in case where XmEnv exists:
 Note that while this setting modifies U-Boot environment, it should be
 done from Linux. At least some vendor U-Boot versions don't allow to
 set this from U-Boot console itself (attempt to set a variable of such
-name is ignored).
+name is ignored). But you can try with the -f option from U-Boot.
+
+In U-Boot console:
+
+```
+setenv -f xmuart 0; saveenv
+```
+
+Note that `saveenv` is mandatory, otherwise Linux side (which analyzes
+this setting) simply won't see it.
 
 ## Enable telnet without even open your camera (remotely)
 
