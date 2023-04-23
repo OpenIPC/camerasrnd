@@ -5,8 +5,8 @@ PRs with additional information and corrections are welcome.
 ## Where to begin?
 
 - [OpenIPC wiki](https://openipc.org/wiki)
-- [English XM FAQ](docs/XM-FAQ-en.md). Thanks to @vbelov42 for translation from Russian.
-- [Russian XM FAQ](docs/XM-FAQ-ru.md).
+- [English XM FAQ](doc/XM-FAQ-en.md). Thanks to @vbelov42 for translation from Russian.
+- [Russian XM FAQ](doc/XM-FAQ-ru.md).
 - [How to get telnet on XM camera](xm_get_telnet.md)
 
 ## Articles/books for newbies
