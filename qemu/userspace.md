@@ -37,4 +37,4 @@ $ sudo mount -o bind /dev/pts debarm/dev/pts
 $ sudo chroot debarm /bin/echo "hello world"
 ```
 
-Ideas were given from [article](https://ownyourbits.com/2018/06/13/transparently-running-binaries-from-any-architecture-in-linux-with-qemu-and-binfmt_misc/)
+Ideas were given from [article](https://web.archive.org/web/20220531113945/https://ownyourbits.com/2018/06/13/transparently-running-binaries-from-any-architecture-in-linux-with-qemu-and-binfmt_misc/) (archived snapshot)
